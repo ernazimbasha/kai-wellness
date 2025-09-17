@@ -20,7 +20,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+/* removed unused hooks */
 
 function MiniKaiBotSVG() {
   return (
@@ -167,16 +167,7 @@ export default function Landing() {
     }
   ];
 
-  const [cursor, setCursor] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      setCursor({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    // Set a pleasant default position on mount (center-right)
-    setCursor({ x: window.innerWidth * 0.75, y: window.innerHeight * 0.35 });
-    return () => window.removeEventListener("mousemove", onMove);
-  }, []);
+  // removed cursor-following state and effects to keep Kai static on screen
 
   if (isLoading) {
     return (
@@ -195,29 +186,7 @@ export default function Landing() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-green-400 to-teal-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
       </div>
 
-      {/* Add: Floating Mini Kai that follows the cursor */}
-      <motion.div
-        className="fixed z-20 pointer-events-none"
-        animate={{ x: cursor.x, y: cursor.y }}
-        transition={{ type: "spring", stiffness: 150, damping: 18, mass: 0.6 }}
-      >
-        <motion.div
-          className="relative -translate-x-1/2 -translate-y-1/2"
-          animate={{ scale: [1, 1.02, 1], rotate: [0, 1.5, -1.5, 0] }}
-          transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
-        >
-          <div className="flex items-center justify-center">
-            <MiniKaiBotSVG />
-          </div>
-          <div className="mt-2">
-            <div className="px-3 py-2 rounded-xl bg-white/30 dark:bg-black/30 border border-white/40 backdrop-blur-md shadow-md">
-              <p className="text-xs md:text-sm">
-                Hi! I'm Kai — let's {user ? "continue your journey" : "start your journey"} ✨
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
+      {/* Static Mini Kai (no cursor-following) removed floating tracker */}
 
       <div className="relative z-10">
         {/* Navigation */}
@@ -263,16 +232,16 @@ export default function Landing() {
               <motion.div
                 animate={{ 
                   rotate: [0, 10, -10, 0],
-                  scale: [1, 1.1, 1]
+                  scale: [1, 1.05, 1]
                 }}
                 transition={{ 
-                  duration: 2,
+                  duration: 2.5,
                   repeat: Infinity,
                   repeatType: "reverse"
                 }}
-                className="text-8xl mb-4"
+                className="mb-4 flex items-center justify-center"
               >
-                🤖
+                <MiniKaiBotSVG />
               </motion.div>
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
                 <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">

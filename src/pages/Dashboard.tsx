@@ -22,10 +22,14 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Add: controlled tabs state
+  const [activeTab, setActiveTab] = useState<"overview" | "activities" | "grove" | "insights">("overview");
 
   // Fetch dashboard data
   const moodTrends = useQuery(api.moods.getMoodTrends, { days: 30 });
@@ -56,7 +60,8 @@ export default function Dashboard() {
   }
 
   const handleStartActivity = (type: string) => {
-    navigate(`/activity/${type}`);
+    setActiveTab("activities");
+    toast.success(`Starting ${type} activity`);
   };
 
   const handleOpenChat = () => {
@@ -174,7 +179,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Main Content */}
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
           <TabsList className="bg-white/20 backdrop-blur-md border-white/30">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="activities">Activities</TabsTrigger>
@@ -217,7 +222,10 @@ export default function Dashboard() {
                           </div>
                           <Button
                             size="sm"
-                            onClick={() => handleStartActivity(rec.type)}
+                            onClick={() => {
+                              setActiveTab("activities");
+                              toast.success(`Starting ${rec.type} activity`);
+                            }}
                             className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
                           >
                             Start
@@ -301,7 +309,10 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       className="h-20 flex-col bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                      onClick={() => handleStartActivity("breathing")}
+                      onClick={() => {
+                        setActiveTab("activities");
+                        toast.info("Breathing guide is available in Activities");
+                      }}
                     >
                       <Brain className="h-6 w-6 mb-2 text-blue-500" />
                       <span className="text-sm">Breathing</span>
@@ -309,7 +320,10 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       className="h-20 flex-col bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                      onClick={() => handleStartActivity("meditation")}
+                      onClick={() => {
+                        setActiveTab("activities");
+                        toast.info("Meditation is available in Activities");
+                      }}
                     >
                       <Heart className="h-6 w-6 mb-2 text-purple-500" />
                       <span className="text-sm">Meditation</span>
@@ -317,7 +331,10 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       className="h-20 flex-col bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                      onClick={() => navigate("/journal")}
+                      onClick={() => {
+                        setActiveTab("activities");
+                        toast.info("Journal insights are shown in Activities");
+                      }}
                     >
                       <BookOpen className="h-6 w-6 mb-2 text-green-500" />
                       <span className="text-sm">Journal</span>
@@ -325,7 +342,7 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       className="h-20 flex-col bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                      onClick={() => navigate("/grove")}
+                      onClick={() => setActiveTab("grove")}
                     >
                       <Leaf className="h-6 w-6 mb-2 text-emerald-500" />
                       <span className="text-sm">Grove</span>
@@ -465,7 +482,7 @@ export default function Dashboard() {
                       </div>
 
                       <Button 
-                        onClick={() => navigate("/grove")}
+                        onClick={() => setActiveTab("grove")}
                         className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
                       >
                         Visit Your Grove
