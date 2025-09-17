@@ -18,11 +18,13 @@ import {
   MessageCircle,
   Activity,
   Award,
-  Smile
+  Smile,
+  Mic
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -40,22 +42,43 @@ export default function Dashboard() {
   const [breathSeconds, setBreathSeconds] = useState<number>(0);
   const [groundingStep, setGroundingStep] = useState<number>(0);
 
+  // Add: interactive responses state for games
+  const [reflectionAnswer, setReflectionAnswer] = useState<string>("");
+  const [moodSelection, setMoodSelection] = useState<string | null>(null);
+  const [worryInput, setWorryInput] = useState<string>("");
+  const [reframe, setReframe] = useState<string>("");
+
   // Simple content for journal reading
-  const journalArticles: Array<{ title: string; content: string }> = [
+  const journalArticles: Array<{ title: string; content: string; description: string }> = [
     {
       title: "Daily Reflection: Small Wins",
+      description: "Capture small achievements to build momentum and self-efficacy.",
       content:
-        "Take 3 minutes to note down one small win from today. It can be finishing a reading, attending class on time, or helping a friend. Why it matters: small wins build momentum and a positive feedback loop.",
+        "Take 3–5 minutes to note one small win from today—finishing a reading, attending class on time, helping a friend. Why it matters: small wins train your brain to notice progress, reduce stress by restoring a sense of control, and build a positive feedback loop for tomorrow's actions.",
     },
     {
       title: "Beat Exam Stress: 3-2-1",
+      description: "A simple pre‑study routine to calm your mind and start focused.",
       content:
-        "Try the 3-2-1 method before studying: 3 deep breaths, 2 minutes of mindful pause, 1 intention for the session. Keep it simple and repeat between study blocks.",
+        "Try the 3-2-1 method before studying: 3 deep breaths (inhale 4s, exhale 6s), 2 minutes of mindful pause (notice sounds, posture, breath), 1 clear intention for the session. Repeat this micro‑routine between blocks to keep stress low and concentration high.",
     },
     {
       title: "Sleep Reset: Gentle Routine",
+      description: "Consistent, low‑effort habits to signal your brain it's bedtime.",
       content:
-        "Set a consistent wind-down routine 30 minutes before bed: dim lights, no screens, water, and a quick stretch. Over a week, you'll notice calmer nights and easier mornings.",
+        "Set a consistent wind‑down routine 30 minutes before bed: dim lights, avoid screens, sip water, stretch for 2 minutes, and write a 3‑item plan for tomorrow. Over a week, you'll notice calmer nights and smoother mornings as your brain learns the wind‑down cue.",
+    },
+    {
+      title: "Study Energy: 50/10 Method",
+      description: "Sustain energy with focused sprints and mindful breaks.",
+      content:
+        "Work for 50 minutes with deep focus, then take a 10‑minute recovery: stand, breathe, or take a short walk. Use the break to lower cognitive load, not to fill it. After 3 cycles, take a longer 30‑minute reset. This protects attention and reduces burnout.",
+    },
+    {
+      title: "Social Recharge: Micro‑Connection",
+      description: "Quick social doses that reduce stress and lift mood.",
+      content:
+        "Send one supportive message, share a helpful resource, or thank a peer. Micro‑connections reduce cortisol and increase resilience. Track how your mood shifts after a 2‑minute connection.",
     },
   ];
 
@@ -128,6 +151,12 @@ export default function Dashboard() {
     navigate("/chat");
   };
 
+  // Add: handler for voice-focused chat (simple redirect for now)
+  const handleSpeakWithKai = () => {
+    navigate("/chat");
+    toast.message("Voice mode: enable mic in Chat to speak with Kai");
+  };
+
   // Add: helper to go to Journals info
   const goToJournalsInfo = () => {
     setActiveTab("overview");
@@ -169,6 +198,14 @@ export default function Dashboard() {
             >
               <MessageCircle className="mr-2 h-4 w-4" />
               Chat with Kai
+            </Button>
+            <Button 
+              onClick={handleSpeakWithKai}
+              variant="outline"
+              className="ml-2 bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40"
+            >
+              <Mic className="mr-2 h-4 w-4" />
+              Speak with Kai
             </Button>
           </div>
 
@@ -417,7 +454,12 @@ export default function Dashboard() {
                                   key={a.title}
                                   className="flex items-center justify-between p-3 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20"
                                 >
-                                  <span className="font-medium">{a.title}</span>
+                                  <div className="pr-3">
+                                    <span className="font-medium block">{a.title}</span>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {a.description}
+                                    </p>
+                                  </div>
                                   <Button
                                     size="sm"
                                     className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
@@ -487,7 +529,7 @@ export default function Dashboard() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Random Prompt */}
+                      {/* Random Prompt with Response */}
                       <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
                         <div className="flex items-center justify-between">
                           <h4 className="font-medium">Random Reflection</h4>
@@ -505,6 +547,30 @@ export default function Dashboard() {
                         <p className="text-sm text-muted-foreground min-h-10">
                           {randomPrompt || "Click 'New Question' to get a reflective prompt."}
                         </p>
+                        <div className="space-y-2">
+                          <Textarea
+                            value={reflectionAnswer}
+                            onChange={(e) => setReflectionAnswer(e.target.value)}
+                            placeholder="Type your reflection here..."
+                            className="min-h-20 bg-white/50 border-white/40"
+                          />
+                          <div className="flex justify-end">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                if (!reflectionAnswer.trim()) {
+                                  toast.error("Write a quick reflection before submitting");
+                                  return;
+                                }
+                                toast.success("Reflection saved. Great self‑check!");
+                                setReflectionAnswer("");
+                              }}
+                              className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white border-0"
+                            >
+                              Submit
+                            </Button>
+                          </div>
+                        </div>
                       </div>
 
                       {/* 60s Breathing */}
@@ -545,31 +611,88 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* 5-4-3-2-1 Grounding */}
+                      {/* Mood Check-in */}
                       <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium">5-4-3-2-1 Grounding</h4>
-                          <div className="space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setGroundingStep((s) => Math.max(0, s - 1))}
-                              className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                            >
-                              Back
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => setGroundingStep((s) => Math.min(groundingSteps.length - 1, s + 1))}
-                              className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-0"
-                            >
-                              Next
-                            </Button>
-                          </div>
+                          <h4 className="font-medium">Mood Check‑in</h4>
+                          {moodSelection && (
+                            <span className="text-xs text-muted-foreground">
+                              Selected: {moodSelection}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-sm text-muted-foreground min-h-10">
-                          {groundingSteps[groundingStep] || groundingSteps[0]}
+                        <div className="grid grid-cols-5 gap-2 text-2xl">
+                          {[
+                            { label: "Very Low", emoji: "😞" },
+                            { label: "Low", emoji: "🙁" },
+                            { label: "Neutral", emoji: "😐" },
+                            { label: "Good", emoji: "🙂" },
+                            { label: "Great", emoji: "😄" },
+                          ].map((m) => (
+                            <button
+                              key={m.label}
+                              className={`p-3 rounded-lg bg-white/40 hover:bg-white/60 border border-white/30 transition ${
+                                moodSelection === m.label ? "ring-2 ring-purple-400" : ""
+                              }`}
+                              onClick={() => {
+                                setMoodSelection(m.label);
+                                toast.message(`Noted: ${m.label}`, {
+                                  description:
+                                    m.label === "Very Low"
+                                      ? "Be gentle with yourself—try a short breath or a short walk."
+                                      : m.label === "Low"
+                                      ? "Small reset helps—water break or 3 deep breaths."
+                                      : m.label === "Neutral"
+                                      ? "Steady pace. A tiny win will lift momentum."
+                                      : m.label === "Good"
+                                      ? "Nice! Keep your rhythm with a mindful break."
+                                      : "Awesome! Share a small win with a friend.",
+                                });
+                              }}
+                              aria-label={m.label}
+                            >
+                              {m.emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Positive Reframe */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <h4 className="font-medium">Positive Reframe</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Write a worry—Kai suggests a kinder, more helpful way to see it.
                         </p>
+                        <Textarea
+                          value={worryInput}
+                          onChange={(e) => setWorryInput(e.target.value)}
+                          placeholder="e.g., I'm behind on readings and feel overwhelmed..."
+                          className="min-h-20 bg-white/50 border-white/40"
+                        />
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const w = worryInput.trim();
+                              if (!w) {
+                                toast.error("Type your worry to reframe it");
+                                return;
+                              }
+                              const suggestion =
+                                "A kinder view: Progress beats perfection. Pick one small, clear step you can do now. Then acknowledge that step as a win.";
+                              setReframe(suggestion);
+                              toast.success("Here's a gentle reframe");
+                            }}
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-0"
+                          >
+                            Reframe
+                          </Button>
+                        </div>
+                        {reframe && (
+                          <div className="p-3 rounded-lg bg-white/40 border border-white/30 text-sm text-muted-foreground">
+                            {reframe}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
