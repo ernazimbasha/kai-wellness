@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { motion } from "framer-motion";
 
 interface AuthProps {
   redirectAfterAuth?: string;
@@ -98,9 +99,31 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-purple-950 dark:via-blue-950 dark:to-indigo-950">
+      {/* Top bar with Back */}
+      <div className="px-4 pt-4">
+        <Button variant="outline" onClick={() => navigate("/") } className="bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40">
+          Back to Home
+        </Button>
+      </div>
       {/* Auth Content */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="flex items-center justify-center h-full flex-col w-full max-w-md">
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-4"
+          >
+            <div className="mx-auto w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg">
+              <img
+                src="./logo.svg"
+                alt="Kai"
+                width={56}
+                height={56}
+                className="rounded-lg"
+              />
+            </div>
+          </motion.div>
           <Card className="w-full pb-0 border border-white/30 bg-white/30 backdrop-blur-md shadow-xl">
             {step === "signIn" ? (
               <>

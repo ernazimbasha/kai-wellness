@@ -33,6 +33,64 @@ export default function Dashboard() {
   // Add: ref to scroll to Journals & Knowledge Hub section
   const journalsRef = useRef<HTMLDivElement | null>(null);
 
+  // Add: local UI state for journals reader and games
+  const [selectedJournal, setSelectedJournal] = useState<{ title: string; content: string } | null>(null);
+  const [randomPrompt, setRandomPrompt] = useState<string>("");
+  const [isBreathing, setIsBreathing] = useState<boolean>(false);
+  const [breathSeconds, setBreathSeconds] = useState<number>(0);
+  const [groundingStep, setGroundingStep] = useState<number>(0);
+
+  // Simple content for journal reading
+  const journalArticles: Array<{ title: string; content: string }> = [
+    {
+      title: "Daily Reflection: Small Wins",
+      content:
+        "Take 3 minutes to note down one small win from today. It can be finishing a reading, attending class on time, or helping a friend. Why it matters: small wins build momentum and a positive feedback loop.",
+    },
+    {
+      title: "Beat Exam Stress: 3-2-1",
+      content:
+        "Try the 3-2-1 method before studying: 3 deep breaths, 2 minutes of mindful pause, 1 intention for the session. Keep it simple and repeat between study blocks.",
+    },
+    {
+      title: "Sleep Reset: Gentle Routine",
+      content:
+        "Set a consistent wind-down routine 30 minutes before bed: dim lights, no screens, water, and a quick stretch. Over a week, you'll notice calmer nights and easier mornings.",
+    },
+  ];
+
+  const randomQuestions: Array<string> = [
+    "What's one thing you're grateful for today—and why?",
+    "If stress was a color right now, what color would it be?",
+    "What would '1% better' look like for you tomorrow?",
+    "Which class drains your energy the most—and what's one tiny fix?",
+    "What made you smile recently?",
+  ];
+
+  const groundingSteps: Array<string> = [
+    "Name 5 things you can see.",
+    "Name 4 things you can feel.",
+    "Name 3 things you can hear.",
+    "Name 2 things you can smell.",
+    "Name 1 thing you can taste.",
+  ];
+
+  const startBreathing = () => {
+    if (isBreathing) return;
+    setIsBreathing(true);
+    setBreathSeconds(60);
+    const id = setInterval(() => {
+      setBreathSeconds((s) => {
+        if (s <= 1) {
+          clearInterval(id);
+          setIsBreathing(false);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+  };
+
   // Fetch dashboard data
   const moodTrends = useQuery(api.moods.getMoodTrends, { days: 30 });
   const activityStats = useQuery(api.activities.getActivityStats, { days: 30 });
@@ -299,75 +357,224 @@ export default function Dashboard() {
                 </Card>
               </motion.div>
 
-              {/* Journals & Knowledge Hub info card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.65 }}
-                ref={journalsRef}
-              >
-                <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5 text-purple-500" />
-                      Journals & Knowledge Hub
-                    </CardTitle>
-                    <CardDescription>
-                      Brief overview of what you can do with Journals and the Knowledge Hub
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
-                        <div className="flex items-center gap-2 mb-2">
-                          <BookOpen className="h-5 w-5 text-purple-500" />
-                          <h4 className="font-medium">Students</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Private journals for daily reflections and growth. Get daily motivational updates tailored to your journey.
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Sparkles className="h-5 w-5 text-blue-500" />
-                          <h4 className="font-medium">Researchers</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Access anonymized insights to study student wellness trends—privacy-first and consent-driven.
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Leaf className="h-5 w-5 text-emerald-500" />
-                          <h4 className="font-medium">Public Users</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Unlock knowledge cards and curated wellness content with simple guidance and tips for everyday wellbeing.
-                        </p>
-                      </div>
-                    </div>
+              {/* Journals & Mind Games side-by-side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Journals & Knowledge Hub info + reader */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  ref={journalsRef}
+                >
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-purple-500" />
+                        Journals & Knowledge Hub
+                      </CardTitle>
+                      <CardDescription>
+                        Brief guidance, mini articles, and unlockable insights
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {!selectedJournal ? (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <BookOpen className="h-5 w-5 text-purple-500" />
+                                <h4 className="font-medium">Students</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Private journals and daily motivational updates to build healthy study habits and resilience.
+                              </p>
+                            </div>
+                            <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Sparkles className="h-5 w-5 text-blue-500" />
+                                <h4 className="font-medium">Researchers</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Access anonymized insights to study student wellness trends—privacy-first and consent-driven.
+                              </p>
+                            </div>
+                            <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Leaf className="h-5 w-5 text-emerald-500" />
+                                <h4 className="font-medium">Public Users</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Unlock knowledge cards and curated wellness content with simple guidance and tips for everyday wellbeing.
+                              </p>
+                            </div>
+                          </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button
-                        variant="outline"
-                        className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                        onClick={goToJournalsInfo}
-                      >
-                        Learn More
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab("activities");
-                          toast.success("Try a guided journaling activity");
-                        }}
-                        className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
-                      >
-                        Start Journaling
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Read a short guide</h4>
+                            <div className="space-y-2">
+                              {journalArticles.map((a) => (
+                                <div
+                                  key={a.title}
+                                  className="flex items-center justify-between p-3 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20"
+                                >
+                                  <span className="font-medium">{a.title}</span>
+                                  <Button
+                                    size="sm"
+                                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                                    onClick={() => setSelectedJournal(a)}
+                                  >
+                                    Read
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                              variant="outline"
+                              className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                              onClick={goToJournalsInfo}
+                            >
+                              Learn More
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setActiveTab("activities");
+                                toast.success("Try a guided journaling activity");
+                              }}
+                              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                            >
+                              Start Journaling
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-lg font-semibold">{selectedJournal.title}</h4>
+                            <Button
+                              variant="outline"
+                              onClick={() => setSelectedJournal(null)}
+                              className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                            >
+                              Back
+                            </Button>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {selectedJournal.content}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Mind Relaxing Games */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-pink-500" />
+                        Mind Relaxing Games
+                      </CardTitle>
+                      <CardDescription>
+                        Light interactions to reset focus and calm the mind
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Random Prompt */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">Random Reflection</h4>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const q = randomQuestions[Math.floor(Math.random() * randomQuestions.length)];
+                              setRandomPrompt(q);
+                            }}
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                          >
+                            New Question
+                          </Button>
+                        </div>
+                        <p className="text-sm text-muted-foreground min-h-10">
+                          {randomPrompt || "Click 'New Question' to get a reflective prompt."}
+                        </p>
+                      </div>
+
+                      {/* 60s Breathing */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">60s Breathing</h4>
+                          {isBreathing ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setIsBreathing(false);
+                                setBreathSeconds(0);
+                              }}
+                              className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                            >
+                              Stop
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={startBreathing}
+                              className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white border-0"
+                            >
+                              Start
+                            </Button>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>{isBreathing ? "Breathe with the rhythm..." : "Click Start to begin a 60s paced breath."}</span>
+                          <span>{breathSeconds > 0 ? `${breathSeconds}s` : ""}</span>
+                        </div>
+                        <div className="h-2 w-full bg-white/30 rounded overflow-hidden">
+                          <div
+                            className="h-2 bg-emerald-500 transition-all"
+                            style={{ width: `${(breathSeconds / 60) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 5-4-3-2-1 Grounding */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">5-4-3-2-1 Grounding</h4>
+                          <div className="space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setGroundingStep((s) => Math.max(0, s - 1))}
+                              className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                            >
+                              Back
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setGroundingStep((s) => Math.min(groundingSteps.length - 1, s + 1))}
+                              className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-0"
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground min-h-10">
+                          {groundingSteps[groundingStep] || groundingSteps[0]}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
             </div>
 
             {/* Quick Actions */}
