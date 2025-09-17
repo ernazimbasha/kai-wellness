@@ -431,9 +431,9 @@ export default function Chat() {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="flex-1 p-0 flex flex-col">
+          <CardContent className="flex-1 p-0 flex flex-col relative">
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-6">
+            <ScrollArea className="flex-1 p-6 pb-28">
               <div className="space-y-4">
                 {conversation?.messages?.map((msg, index) => (
                   <motion.div
@@ -491,7 +491,7 @@ export default function Chat() {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="border-t border-white/20 p-4">
+            <div className="sticky bottom-0 z-10 border-t border-white/20 p-4 bg-gradient-to-t from-white/70 to-transparent backdrop-blur-md">
               <div className="flex items-center space-x-2">
                 <Input
                   value={message}

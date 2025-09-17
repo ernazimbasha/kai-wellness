@@ -147,30 +147,30 @@ export const generateKaiResponse = mutation({
       throw new Error("User not authenticated");
     }
 
-    // Simple response generation based on keywords and context
+    // Simple response generation strictly focused on wellbeing and stress support
     let response = "";
     let emotion = "supportive";
     
     const message = args.userMessage.toLowerCase();
-    
+
     if (message.includes("stress") || message.includes("anxious") || message.includes("overwhelmed")) {
-      response = "I can sense you're feeling stressed right now. That's completely normal for students! 🌱 Would you like to try a quick breathing exercise together? I can guide you through a 5-minute session that many students find really helpful.";
+      response = "I hear you—feeling stressed can be heavy. Let's take a micro-step together. Try a quick 4-4-6 breath: inhale 4, hold 4, exhale 6. I'm here with you. Would you like a short guided breathing or a calming reflection prompt?";
       emotion = "empathetic";
     } else if (message.includes("exam") || message.includes("test") || message.includes("study")) {
-      response = "Exams can definitely be challenging! 📚 Remember, it's not just about studying hard, but also taking care of your mental wellbeing. Have you taken any breaks today? I could suggest some quick mindfulness exercises to help you focus better.";
+      response = "Exams can bring pressure. You're not alone. A brief reset can boost focus—how about a 60-second breathing round or a grounding check-in? I can also share a gentle study break routine to ease your mind.";
       emotion = "encouraging";
     } else if (message.includes("tired") || message.includes("exhausted") || message.includes("sleep")) {
-      response = "It sounds like you might need some rest. 😴 Good sleep is crucial for both your academic performance and emotional wellbeing. Would you like some tips for better sleep hygiene, or shall we try a relaxing meditation to help you unwind?";
+      response = "Your body's asking for care. Let's invite calm: dim lights, slower breathing (in 4 • hold 4 • out 6). I can guide a 2-minute wind-down or share a simple sleep hygiene tip if you'd like.";
       emotion = "caring";
     } else if (message.includes("good") || message.includes("great") || message.includes("happy")) {
-      response = "That's wonderful to hear! 😊 I'm so glad you're feeling good. This is a perfect time to maybe try journaling about what's going well, or perhaps nurture your plants in the Mindful Grove. Positive moments are worth celebrating!";
+      response = "That's wonderful—let's nourish that feeling. A brief gratitude note or a mindful minute can help it last. Want a quick prompt to capture what's going well today?";
       emotion = "joyful";
     } else {
-      response = "Thank you for sharing that with me. I'm here to listen and support you. 💙 Is there anything specific you'd like to work on today? I can help with breathing exercises, meditation, journaling, or just be here to chat about what's on your mind.";
+      // Always steer to stress relief and emotional support
+      response = "Thank you for opening up. I'm here to help you feel calmer and supported. Would you prefer a guided breathing minute, a grounding exercise (5-4-3-2-1), or a gentle reflection to untangle what's on your mind?";
       emotion = "supportive";
     }
 
-    // Add the response to the conversation
     await ctx.runMutation(api.conversations.addMessage, {
       sessionId: args.sessionId,
       message: response,
