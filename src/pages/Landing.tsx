@@ -258,6 +258,10 @@ export default function Landing() {
                   Your AI Friend for Student Wellness
                 </span>
               </h1>
+              {/* Added hero tagline */}
+              <p className="text-lg md:text-xl font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                Your Mind Speaks, We Listen Your Peace Starts Here...!
+              </p>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
                 An empathetic AI companion that understands student life, detects stress before it overwhelms you, 
                 and guides you through personalized wellness activities. Built with privacy-first technology.
