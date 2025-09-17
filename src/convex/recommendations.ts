@@ -32,8 +32,8 @@ function scoreText(text: string): { stress: number; positivity: number } {
 }
 
 export const getPersonalized = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { userText: v.optional(v.string()) },
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       // Not signed in, return gentle general suggestions
@@ -86,7 +86,7 @@ export const getPersonalized = query({
       ] as Array<Rec>;
     }
 
-    const user = await ctx.db.query("users").withIndex("email", (q) => q.eq("email", email)).unique();
+    const user = await ctx.db.query("users").withIndex("email", (q) => q.eq("email", identity.email ?? "")).unique();
 
     if (!user) {
       return [
@@ -152,6 +152,13 @@ export const getPersonalized = query({
     // Aggregate text and score
     let stressScore = 0;
     let positivityScore = 0;
+
+    // Incorporate live user input first (weighted slightly higher on stress)
+    if (args.userText && args.userText.trim().length > 0) {
+      const s = scoreText(args.userText);
+      stressScore += s.stress * 2;
+      positivityScore += s.positivity;
+    }
 
     for (const j of journals) {
       const s = scoreText(`${j.title} ${j.content}`);

@@ -86,12 +86,17 @@ export default function Dashboard() {
     "", "", "", "", ""
   ]);
 
+  // NEW: state for tailoring recommendations via user input
+  const [recInput, setRecInput] = useState<string>("");
+  const [recQuery, setRecQuery] = useState<string | null>(null);
+
   // Fetch dashboard data (must be declared before any derived helpers that read them)
   const moodTrends = useQuery(api.moods.getMoodTrends, { days: 30 });
   const activityStats = useQuery(api.activities.getActivityStats, { days: 30 });
   const journalStats = useQuery(api.journals.getJournalStats);
   const userGrove = useQuery(api.grove.getUserGrove);
-  const recommendations = useQuery(api.recommendations.getPersonalized, {});
+  // CHANGE: pass undefined instead of null to avoid validator error
+  const recommendations = useQuery(api.recommendations.getPersonalized, { userText: recQuery ?? undefined });
 
   // Music mood lift (grove) state
   const musicTimerRef = useRef<number | null>(null);
@@ -530,6 +535,28 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    {/* Insert input row before listing recommendations */}
+                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                      <Input
+                        value={recInput}
+                        onChange={(e) => setRecInput(e.target.value)}
+                        placeholder="Tell Kai what you need (e.g., anxious before exams)..."
+                        className="bg-white/50 border-white/40"
+                      />
+                      <Button
+                        onClick={() => {
+                          const text = recInput.trim();
+                          setRecQuery(text.length > 0 ? text : null);
+                          toast.message("Updated suggestions", {
+                            description: text ? "Tailoring to your input" : "Showing general suggestions",
+                          });
+                        }}
+                        className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                      >
+                        Get Suggestions
+                      </Button>
+                    </div>
+                    
                     {recommendations?.map((rec: any, index: number) => (
                       <motion.div
                         key={index}
