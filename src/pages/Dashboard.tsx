@@ -192,21 +192,23 @@ export default function Dashboard() {
                 Let's check in on your wellness journey today
               </p>
             </div>
-            <Button 
-              onClick={handleOpenChat}
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-lg"
-            >
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Chat with Kai
-            </Button>
-            <Button 
-              onClick={handleSpeakWithKai}
-              variant="outline"
-              className="ml-2 bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40"
-            >
-              <Mic className="mr-2 h-4 w-4" />
-              Speak with Kai
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={handleOpenChat}
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-lg"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with Kai
+              </Button>
+              <Button 
+                onClick={handleSpeakWithKai}
+                variant="outline"
+                className="bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40"
+              >
+                <Mic className="mr-2 h-4 w-4" />
+                Speak with Kai
+              </Button>
+            </div>
           </div>
 
           {/* Quick Stats Cards */}
