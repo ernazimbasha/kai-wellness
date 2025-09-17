@@ -531,7 +531,7 @@ export default function Dashboard() {
                   ref={journalsRef}
                   className="h-full"
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col min-h-[560px]">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-purple-500" />
@@ -672,7 +672,7 @@ export default function Dashboard() {
                   transition={{ delay: 0.25 }}
                   className="h-full"
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col min-h-[560px]">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-pink-500" />
