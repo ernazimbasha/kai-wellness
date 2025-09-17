@@ -52,6 +52,36 @@ export default function Dashboard() {
   const [gratitude2, setGratitude2] = useState<string>("");
   const [gratitude3, setGratitude3] = useState<string>("");
 
+  // Add: varied prompt sets for Gratitude Trio and state to rotate them
+  const gratitudePromptSets: Array<{ one: string; two: string; three: string }> = [
+    {
+      one: "1) Something simple that felt good...",
+      two: "2) A person or moment you appreciated...",
+      three: "3) One tiny win you noticed...",
+    },
+    {
+      one: "1) A comfort from today (taste, sound, or sight)...",
+      two: "2) Someone who made life a bit easier...",
+      three: "3) One thing you did despite resistance...",
+    },
+    {
+      one: "1) A small act of kindness you saw or did...",
+      two: "2) A place where you felt calm today...",
+      three: "3) A helpful thought you had...",
+    },
+    {
+      one: "1) A study tool or habit that helped...",
+      two: "2) A supportive message or check‑in...",
+      three: "3) One step you took toward a goal...",
+    },
+  ];
+  const [gratitudeSetIndex, setGratitudeSetIndex] = useState<number>(0);
+
+  // Add: answers for each 5‑4‑3‑2‑1 grounding step
+  const [groundingAnswers, setGroundingAnswers] = useState<Array<string>>([
+    "", "", "", "", ""
+  ]);
+
   // Richer content for journal reading
   const journalArticles: Array<{ title: string; content: string; description: string; bullets?: Array<string> }> = [
     {
@@ -819,47 +849,6 @@ export default function Dashboard() {
                         )}
                       </div>
 
-                      {/* 5-4-3-2-1 Grounding */}
-                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium">5‑4‑3‑2‑1 Grounding</h4>
-                          <span className="text-xs text-muted-foreground">
-                            Step {groundingStep + 1} / {groundingSteps.length}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {groundingSteps[groundingStep]}
-                        </p>
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setGroundingStep(0);
-                              toast.message("Grounding reset");
-                            }}
-                            className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                          >
-                            Reset
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              const next = groundingStep + 1;
-                              if (next >= groundingSteps.length) {
-                                toast.success("Nice job grounding yourself ✨");
-                                setGroundingStep(0);
-                              } else {
-                                setGroundingStep(next);
-                              }
-                            }}
-                            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-0"
-                          >
-                            {groundingStep === groundingSteps.length - 1 ? "Finish" : "Next"}
-                          </Button>
-                        </div>
-                      </div>
-
                       {/* Gratitude Trio */}
                       <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
                         <h4 className="font-medium">Gratitude Trio</h4>
@@ -870,23 +859,35 @@ export default function Dashboard() {
                           <Input
                             value={gratitude1}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setGratitude1(e.target.value)}
-                            placeholder="1) Something simple that felt good..."
+                            placeholder={gratitudePromptSets[gratitudeSetIndex].one}
                             className="bg-white/50 border-white/40"
                           />
                           <Input
                             value={gratitude2}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setGratitude2(e.target.value)}
-                            placeholder="2) A person or moment you appreciated..."
+                            placeholder={gratitudePromptSets[gratitudeSetIndex].two}
                             className="bg-white/50 border-white/40"
                           />
                           <Input
                             value={gratitude3}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setGratitude3(e.target.value)}
-                            placeholder="3) One tiny win you noticed..."
+                            placeholder={gratitudePromptSets[gratitudeSetIndex].three}
                             className="bg-white/50 border-white/40"
                           />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-between">
+                          {/* New: Rotate prompts button */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setGratitudeSetIndex((i) => (i + 1) % gratitudePromptSets.length);
+                              toast.message("New gratitude prompts loaded");
+                            }}
+                            className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                          >
+                            New Prompts
+                          </Button>
                           <Button
                             size="sm"
                             onClick={() => {
