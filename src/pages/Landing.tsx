@@ -167,8 +167,6 @@ export default function Landing() {
     }
   ];
 
-  // removed cursor-following state and effects to keep Kai static on screen
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -185,8 +183,6 @@ export default function Landing() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-green-400 to-teal-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
       </div>
-
-      {/* Static Mini Kai (no cursor-following) removed floating tracker */}
 
       <div className="relative z-10">
         {/* Navigation */}
@@ -209,7 +205,17 @@ export default function Landing() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2"
             >
+              {!user && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/auth")}
+                  className="bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30"
+                >
+                  Sign In
+                </Button>
+              )}
               <Button 
                 onClick={handleGetStarted}
                 className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-lg"
@@ -441,6 +447,98 @@ export default function Landing() {
                 </div>
               </Card>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Journals & Knowledge Hub */}
+        <section className="container mx-auto px-4 py-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
+              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Journals & Knowledge Hub
+              </span>
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Simple, private, and helpful resources for everyone.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center mb-3">
+                    <BookOpen className="h-6 w-6 text-purple-500" />
+                  </div>
+                  <CardTitle className="text-xl">Students</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">
+                    Private journals and daily motivational updates to build healthy study habits and resilience.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center mb-3">
+                    <Shield className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <CardTitle className="text-xl">Researchers</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">
+                    Access anonymized insights to study trends in student wellness, privacy-first and consent-driven.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center mb-3">
+                    <Users className="h-6 w-6 text-emerald-500" />
+                  </div>
+                  <CardTitle className="text-xl">Public Users</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">
+                    Unlock knowledge cards and curated wellness content to stay inspired every day.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          <div className="flex justify-center mt-8">
+            <Button
+              size="lg"
+              onClick={handleGetStarted}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-xl"
+            >
+              {user ? "Open Dashboard" : "Start Journaling"}
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </section>
 
