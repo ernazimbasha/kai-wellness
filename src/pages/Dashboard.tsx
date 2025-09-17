@@ -22,7 +22,8 @@ import {
   Mic,
   Music2,
   Play,
-  Pause
+  Pause,
+  LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 export default function Dashboard() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
 
   // Add: controlled tabs state
@@ -410,6 +411,17 @@ export default function Dashboard() {
               >
                 <Mic className="mr-2 h-4 w-4" />
                 Speak with Kai
+              </Button>
+              <Button 
+                onClick={async () => {
+                  await signOut();
+                  navigate("/auth");
+                }}
+                variant="outline"
+                className="bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
               </Button>
             </div>
           </div>
