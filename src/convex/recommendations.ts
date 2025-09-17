@@ -5,7 +5,7 @@ type Rec = {
   title: string;
   description: string;
   duration: number;
-  type: "breathing" | "meditation" | "journaling" | "mindfulness" | "music" | "reflection" | "grounding" | "motivational";
+  type: "breathing" | "meditation" | "journaling" | "mindfulness" | "music" | "reflection" | "grounding" | "motivational" | "film" | "walk" | "game";
 };
 
 const NEGATIVE_KEYWORDS: Array<string> = [
@@ -29,6 +29,27 @@ function scoreText(text: string): { stress: number; positivity: number } {
     if (t.includes(k)) positivity += 1;
   }
   return { stress, positivity };
+}
+
+function shuffle<T>(arr: Array<T>): Array<T> {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function uniqueByTitle(items: Array<Rec>): Array<Rec> {
+  const seen: Record<string, boolean> = {};
+  const out: Array<Rec> = [];
+  for (const r of items) {
+    if (!seen[r.title]) {
+      seen[r.title] = true;
+      out.push(r);
+    }
+  }
+  return out;
 }
 
 export const getPersonalized = query({
@@ -243,27 +264,164 @@ export const getPersonalized = query({
       );
     }
 
+    // Add: intent parsing for richer, user-directed suggestions
+    const text = (args.userText ?? "").toLowerCase();
+    const wantsFilm = /(movie|film|watch|series|anime)/.test(text);
+    const wantsMusic = /(music|song|listen|playlist|lofi|lo\-?fi)/.test(text);
+    const wantsWalk = /(walk|outside|fresh air|sunlight|stroll|stretch)/.test(text);
+    const wantsGame = /(game|play|mini\-?game|fun)/.test(text);
+
+    const topicExam = /(exam|test|study|assignment|deadline)/.test(text);
+    const topicSleep = /(sleep|insomnia|bed|night|rest)/.test(text);
+    const topicFocus = /(focus|concentrat|distract|procrastinat)/.test(text);
+    const topicLonely = /(alone|lonely|isolat|no one)/.test(text);
+    const topicBurnout = /(burnout|burned out|exhaust|tired|drained)/.test(text);
+
+    const intentRecs: Array<Rec> = [];
+
+    if (wantsFilm) {
+      intentRecs.push(
+        {
+          title: "Feel‑Good Film Break",
+          description: "Pick a gentle, uplifting movie (e.g., Paddington 2, Soul, The Secret Life of Walter Mitty). Set a 90‑120m window max.",
+          duration: 100,
+          type: "film",
+        },
+        {
+          title: "Short Series Reset",
+          description: "Watch one light episode (20–30m) then return—keeps it restorative, not avoidant.",
+          duration: 25,
+          type: "film",
+        }
+      );
+    }
+
+    if (wantsMusic || topicFocus) {
+      intentRecs.push(
+        {
+          title: "Lofi Focus Mix (15m)",
+          description: "Low‑stimulus playlist to settle attention. Headphones, moderate volume, one small task.",
+          duration: 15,
+          type: "music",
+        },
+        {
+          title: "Mood Uplift Tracks (5–10m)",
+          description: "Play 2–3 upbeat songs you associate with small wins to nudge momentum.",
+          duration: 8,
+          type: "music",
+        }
+      );
+    }
+
+    if (wantsWalk || topicBurnout) {
+      intentRecs.push(
+        {
+          title: "Sunlight Walk (10m)",
+          description: "Go outside for fresh air and gentle sunlight. Look far, relax shoulders, breathe slowly.",
+          duration: 10,
+          type: "walk",
+        },
+        {
+          title: "Stretch & Sip (5m)",
+          description: "Light stretches + hydration break. Calm the body before the next step.",
+          duration: 5,
+          type: "walk",
+        }
+      );
+    }
+
+    if (wantsGame) {
+      intentRecs.push(
+        {
+          title: "Quick Breathing Game (60s)",
+          description: "Follow a paced inhale/exhale rhythm like a mini game—aim for 4 calm cycles.",
+          duration: 1,
+          type: "game",
+        },
+        {
+          title: "5‑4‑3‑2‑1 Senses Challenge",
+          description: "Name 5 see, 4 feel, 3 hear, 2 smell, 1 taste—turn grounding into a quick win.",
+          duration: 3,
+          type: "game",
+        }
+      );
+    }
+
+    if (topicExam) {
+      intentRecs.push(
+        {
+          title: "3‑2‑1 Study Starter",
+          description: "3 breaths, 2 minutes mindful pause, 1 clear intention—start lighter and steadier.",
+          duration: 3,
+          type: "mindfulness",
+        }
+      );
+    }
+
+    if (topicSleep) {
+      intentRecs.push(
+        {
+          title: "Sleep Wind‑Down (10m)",
+          description: "Dim lights, stretch 2m, hydrate, jot 3‑item plan for tomorrow—signal your brain it's bedtime.",
+          duration: 10,
+          type: "mindfulness",
+        }
+      );
+    }
+
+    if (topicLonely) {
+      intentRecs.push(
+        {
+          title: "Micro‑Connection (3m)",
+          description: "Send a supportive note or thank someone specifically—small social dose reduces stress.",
+          duration: 3,
+          type: "reflection",
+        }
+      );
+    }
+
     // Motivational nudge based on positivity
     if (positivityScore < 2) {
       recs.push({
         title: "Motivational Nudge",
-        description: "A gentle reminder: progress beats perfection. One tiny step is enough right now.",
+        description: "Progress > perfection. One tiny, kind step is enough right now.",
         duration: 1,
         type: "motivational",
       });
     }
 
-    // Ensure at least 3 recs
-    while (recs.length < 3) {
-      recs.push({
+    // Blend intent-based and stress-based, dedupe, shuffle, ensure variety and count
+    let combined = uniqueByTitle([...intentRecs, ...recs]);
+
+    // Fallbacks if still light
+    const fallbacks: Array<Rec> = [
+      {
         title: "Calm Reset (2 min)",
-        description: "Sit comfortably, shoulders soft, follow the breath in and out. Let thoughts pass.",
+        description: "Sit comfortably, soften shoulders, follow the breath. Let thoughts pass.",
         duration: 2,
         type: "meditation",
-      });
+      },
+      {
+        title: "Gratitude Trio",
+        description: "Note 3 small wins or comforts today to gently lift mood.",
+        duration: 2,
+        type: "journaling",
+      },
+      {
+        title: "Breathing Pause (60s)",
+        description: "Inhale 4, hold 4, exhale 6—repeat to downshift tension quickly.",
+        duration: 1,
+        type: "breathing",
+      },
+    ];
+
+    for (const f of fallbacks) {
+      if (combined.length >= 6) break;
+      if (!combined.find((r) => r.title === f.title)) combined.push(f);
     }
 
-    // Cap to 6 to keep UI tight
-    return recs.slice(0, 6);
+    // Shuffle for variety and cap
+    combined = shuffle(combined).slice(0, 6);
+    return combined;
   },
 });
