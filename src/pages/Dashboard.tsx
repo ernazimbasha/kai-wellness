@@ -358,7 +358,7 @@ export default function Dashboard() {
               </motion.div>
 
               {/* Journals & Mind Games side-by-side */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:col-span-2">
                 {/* Journals & Knowledge Hub info + reader */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
