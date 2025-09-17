@@ -23,8 +23,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useState, useRef } from "react";
+import { useState, useRef, type ChangeEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -47,6 +48,9 @@ export default function Dashboard() {
   const [moodSelection, setMoodSelection] = useState<string | null>(null);
   const [worryInput, setWorryInput] = useState<string>("");
   const [reframe, setReframe] = useState<string>("");
+  const [gratitude1, setGratitude1] = useState<string>("");
+  const [gratitude2, setGratitude2] = useState<string>("");
+  const [gratitude3, setGratitude3] = useState<string>("");
 
   // Richer content for journal reading
   const journalArticles: Array<{ title: string; content: string; description: string; bullets?: Array<string> }> = [
@@ -813,6 +817,95 @@ export default function Dashboard() {
                             {reframe}
                           </div>
                         )}
+                      </div>
+
+                      {/* 5-4-3-2-1 Grounding */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">5‑4‑3‑2‑1 Grounding</h4>
+                          <span className="text-xs text-muted-foreground">
+                            Step {groundingStep + 1} / {groundingSteps.length}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {groundingSteps[groundingStep]}
+                        </p>
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setGroundingStep(0);
+                              toast.message("Grounding reset");
+                            }}
+                            className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                          >
+                            Reset
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const next = groundingStep + 1;
+                              if (next >= groundingSteps.length) {
+                                toast.success("Nice job grounding yourself ✨");
+                                setGroundingStep(0);
+                              } else {
+                                setGroundingStep(next);
+                              }
+                            }}
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-0"
+                          >
+                            {groundingStep === groundingSteps.length - 1 ? "Finish" : "Next"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Gratitude Trio */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <h4 className="font-medium">Gratitude Trio</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Note three small things you're grateful for today.
+                        </p>
+                        <div className="grid grid-cols-1 gap-2">
+                          <Input
+                            value={gratitude1}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setGratitude1(e.target.value)}
+                            placeholder="1) Something simple that felt good..."
+                            className="bg-white/50 border-white/40"
+                          />
+                          <Input
+                            value={gratitude2}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setGratitude2(e.target.value)}
+                            placeholder="2) A person or moment you appreciated..."
+                            className="bg-white/50 border-white/40"
+                          />
+                          <Input
+                            value={gratitude3}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setGratitude3(e.target.value)}
+                            placeholder="3) One tiny win you noticed..."
+                            className="bg-white/50 border-white/40"
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const vals = [gratitude1.trim(), gratitude2.trim(), gratitude3.trim()];
+                              const count = vals.filter(Boolean).length;
+                              if (count === 0) {
+                                toast.error("Add at least one gratitude");
+                                return;
+                              }
+                              toast.success(`Saved ${count} gratitude${count > 1 ? "s" : ""}. Well done!`);
+                              setGratitude1("");
+                              setGratitude2("");
+                              setGratitude3("");
+                            }}
+                            className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white border-0"
+                          >
+                            Save
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
