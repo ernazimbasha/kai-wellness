@@ -410,13 +410,10 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       className="h-20 flex-col bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                      onClick={() => {
-                        setActiveTab("activities");
-                        toast.info("Journal insights are shown in Activities");
-                      }}
+                      onClick={() => setActiveTab("insights")}
                     >
-                      <BookOpen className="h-6 w-6 mb-2 text-green-500" />
-                      <span className="text-sm">Journal</span>
+                      <TrendingUp className="h-6 w-6 mb-2 text-blue-500" />
+                      <span className="text-sm">Insights</span>
                     </Button>
                     <Button
                       variant="outline"
