@@ -483,7 +483,7 @@ export default function Landing() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-base">
-                    Private journals and daily motivational updates to build healthy study habits and resilience.
+                    Private journals with mood tagging, gentle prompts, and daily motivational nudges to build resilient study habits. Your entries stay private by default and help you reflect, plan, and track progress over time.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -503,7 +503,7 @@ export default function Landing() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-base">
-                    Access anonymized insights to study trends in student wellness, privacy-first and consent-driven.
+                    Access privacy‑first, consent‑driven aggregates to study trends in stress, mood, and habits. Explore ethically sourced insights, longitudinal patterns, and anonymized cohorts to inform supportive interventions on campus.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -523,7 +523,7 @@ export default function Landing() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-base">
-                    Unlock knowledge cards and curated wellness content to stay inspired every day.
+                    Unlock bite‑sized knowledge cards, guided micro‑articles, and practical tips you can apply in minutes. Learn evidence‑informed strategies for sleep, focus, and stress—simple, clear, and designed for everyday wellbeing.
                   </CardDescription>
                 </CardContent>
               </Card>
