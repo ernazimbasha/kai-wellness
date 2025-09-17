@@ -31,6 +31,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -38,6 +39,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       navigate(redirect);
     }
   }, [authLoading, isAuthenticated, navigate, redirectAfterAuth]);
+
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
@@ -138,9 +140,33 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       onClick={() => navigate("/")}
                     />
                   </div>
-                  <CardTitle className="text-xl">Get Started</CardTitle>
+                  <div className="inline-flex p-1 rounded-full bg-white/30 border border-white/30 mb-3">
+                    <Button
+                      type="button"
+                      variant={authMode === "signin" ? "default" : "ghost"}
+                      className={`h-8 px-4 rounded-full ${authMode === "signin" ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : ""}`}
+                      onClick={() => setAuthMode("signin")}
+                      disabled={isLoading}
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={authMode === "signup" ? "default" : "ghost"}
+                      className={`h-8 px-4 rounded-full ${authMode === "signup" ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : ""}`}
+                      onClick={() => setAuthMode("signup")}
+                      disabled={isLoading}
+                    >
+                      Sign Up
+                    </Button>
+                  </div>
+                  <CardTitle className="text-xl">
+                    {authMode === "signin" ? "Welcome back" : "Create your account"}
+                  </CardTitle>
                   <CardDescription>
-                    Enter your email to log in or sign up
+                    {authMode === "signin"
+                      ? "Enter your email to sign in"
+                      : "Enter your email to sign up"}
                   </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleEmailSubmit}>
@@ -162,6 +188,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         variant="outline"
                         size="icon"
                         disabled={isLoading}
+                        aria-label={authMode === "signin" ? "Send sign in code" : "Send sign up code"}
                       >
                         {isLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -201,7 +228,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             ) : (
               <>
                 <CardHeader className="text-center mt-4">
-                  <CardTitle>Check your email</CardTitle>
+                  <CardTitle>
+                    {authMode === "signin" ? "Check your email" : "Verify your email"}
+                  </CardTitle>
                   <CardDescription>
                     We've sent a code to {step.email}
                   </CardDescription>
