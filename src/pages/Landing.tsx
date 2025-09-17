@@ -96,7 +96,7 @@ function MiniKaiBotSVG() {
 }
 
 export default function Landing() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
@@ -104,6 +104,15 @@ export default function Landing() {
       navigate("/dashboard");
     } else {
       navigate("/auth");
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch {
+      // ignore silently
     }
   };
 
@@ -214,6 +223,15 @@ export default function Landing() {
                   className="bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30"
                 >
                   <a href="/auth">Sign In</a>
+                </Button>
+              )}
+              {user && (
+                <Button
+                  variant="outline"
+                  onClick={handleSignOut}
+                  className="bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30"
+                >
+                  Sign Out
                 </Button>
               )}
               <Button 
