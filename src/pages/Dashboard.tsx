@@ -19,11 +19,14 @@ import {
   Activity,
   Award,
   Smile,
-  Mic
+  Mic,
+  Music2,
+  Play,
+  Pause
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
@@ -81,6 +84,44 @@ export default function Dashboard() {
   const [groundingAnswers, setGroundingAnswers] = useState<Array<string>>([
     "", "", "", "", ""
   ]);
+
+  // Music mood lift (grove) state
+  const musicTimerRef = useRef<number | null>(null);
+  const [musicPlaying, setMusicPlaying] = useState<boolean>(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
+  const [musicProgress, setMusicProgress] = useState<number>(0);
+
+  // Derive mood tag from current average mood
+  const getMoodTag = () => {
+    const avg = moodTrends?.averageMood ?? 3;
+    if (avg <= 2) return "uplift";
+    if (avg < 4) return "steady";
+    return "focus";
+  };
+
+  // Recommendations list based on mood tag
+  const moodMusicRecommendations: Array<{ title: string; mood: string; duration: number }> = (() => {
+    const tag = getMoodTag();
+    if (tag === "uplift") {
+      return [
+        { title: "Sunrise Smile", mood: "Uplift", duration: 90 },
+        { title: "Warm Breeze", mood: "Uplift", duration: 120 },
+        { title: "Bright Steps", mood: "Uplift", duration: 105 },
+      ];
+    }
+    if (tag === "steady") {
+      return [
+        { title: "Gentle Balance", mood: "Steady", duration: 120 },
+        { title: "Soft Horizons", mood: "Steady", duration: 150 },
+        { title: "Calm Echoes", mood: "Steady", duration: 135 },
+      ];
+    }
+    return [
+      { title: "Deep Focus", mood: "Focus", duration: 150 },
+      { title: "Quiet Flow", mood: "Focus", duration: 180 },
+      { title: "Still Waters", mood: "Focus", duration: 165 },
+    ];
+  })();
 
   // Richer content for journal reading
   const journalArticles: Array<{ title: string; content: string; description: string; bullets?: Array<string> }> = [
@@ -290,6 +331,43 @@ export default function Dashboard() {
       journalsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 0);
     toast.info("Opened Journals & Knowledge Hub");
+  };
+
+  const stopTimer = () => {
+    if (musicTimerRef.current) {
+      window.clearInterval(musicTimerRef.current);
+      musicTimerRef.current = null;
+    }
+  };
+
+  const startTrack = (index: number) => {
+    stopTimer();
+    setCurrentTrackIndex(index);
+    setMusicProgress(0);
+    setMusicPlaying(true);
+    const duration = moodMusicRecommendations[index]?.duration ?? 120;
+    musicTimerRef.current = window.setInterval(() => {
+      setMusicProgress((p) => {
+        if (p + 1 >= duration) {
+          // Auto-advance to next
+          const next = (index + 1) % moodMusicRecommendations.length;
+          stopTimer();
+          // start next track
+          setTimeout(() => startTrack(next), 300);
+          return duration;
+        }
+        return p + 1;
+      });
+    }, 1000);
+  };
+
+  const togglePlayPause = () => {
+    if (!musicPlaying) {
+      startTrack(currentTrackIndex);
+    } else {
+      setMusicPlaying(false);
+      stopTimer();
+    }
   };
 
   return (
@@ -1009,26 +1087,56 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
+              <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Journal Statistics</CardTitle>
+                  <CardTitle>Live Wellness Scores</CardTitle>
+                  <CardDescription>
+                    Real-time estimates based on your current streaks, activities, journaling, and mood
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 rounded-lg bg-white/30 backdrop-blur-sm">
-                      <div className="text-2xl font-bold">{journalStats?.totalEntries || 0}</div>
-                      <div className="text-sm text-muted-foreground">Total Entries</div>
-                    </div>
-                    <div className="text-center p-4 rounded-lg bg-white/30 backdrop-blur-sm">
-                      <div className="text-2xl font-bold">{Math.round(journalStats?.averageWordsPerEntry || 0)}</div>
-                      <div className="text-sm text-muted-foreground">Avg Words</div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center p-4 rounded-lg bg-white/30 backdrop-blur-sm">
-                    <div className="text-2xl font-bold">{journalStats?.entriesThisWeek || 0}</div>
-                    <div className="text-sm text-muted-foreground">This Week</div>
-                  </div>
+                  {(() => {
+                    const completed = activityStats?.completedActivities || 0;
+                    const streak = activityStats?.streakDays || 0;
+                    const avgDur = activityStats?.averageDuration || 0; // minutes
+                    const avgMood = moodTrends?.averageMood || 0;       // 0-5
+                    const weekEntries = journalStats?.entriesThisWeek || 0;
+
+                    const engagementScore = Math.min(
+                      100,
+                      Math.round(completed * 5 + streak * 4 + Math.min(avgDur, 30) * 1 + avgMood * 12)
+                    );
+
+                    const consistencyScore = Math.min(
+                      100,
+                      Math.round((Math.min(streak, 30) / 30) * 60 + (Math.min(weekEntries, 7) / 7) * 40)
+                    );
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">Engagement Score</span>
+                            <span className="text-sm text-muted-foreground">{engagementScore}/100</span>
+                          </div>
+                          <Progress value={engagementScore} />
+                          <p className="text-xs text-muted-foreground">
+                            Factors: activities, streaks, avg session time, current mood
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">Consistency Score</span>
+                            <span className="text-sm text-muted-foreground">{consistencyScore}/100</span>
+                          </div>
+                          <Progress value={consistencyScore} />
+                          <p className="text-xs text-muted-foreground">
+                            Factors: streak days and journal entries this week
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </motion.div>
@@ -1101,8 +1209,99 @@ export default function Dashboard() {
                         </div>
                       </div>
 
+                      {/* Music Mood Lift: mood-based recommendations with progress */}
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Music2 className="h-5 w-5 text-purple-500" />
+                            <h4 className="font-medium">Music Mood Lift</h4>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={musicPlaying ? "outline" : "default"}
+                            className={musicPlaying ? "bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40" : "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"}
+                            onClick={togglePlayPause}
+                          >
+                            {musicPlaying ? (
+                              <>
+                                <Pause className="h-4 w-4 mr-2" /> Pause
+                              </>
+                            ) : (
+                              <>
+                                <Play className="h-4 w-4 mr-2" /> Play
+                              </>
+                            )}
+                          </Button>
+                        </div>
+
+                        {/* Now Playing */}
+                        <div className="rounded-lg bg-white/40 border border-white/30 p-3">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="truncate">
+                              <span className="font-medium">Now Playing: </span>
+                              <span className="truncate">{moodMusicRecommendations[currentTrackIndex]?.title}</span>
+                              <span className="ml-2 text-muted-foreground text-xs">({moodMusicRecommendations[currentTrackIndex]?.mood})</span>
+                            </div>
+                            <span className="text-muted-foreground">
+                              {musicProgress}s / {moodMusicRecommendations[currentTrackIndex]?.duration || 0}s
+                            </span>
+                          </div>
+                          <div className="h-2 w-full bg-white/30 rounded overflow-hidden mt-2">
+                            <div
+                              className="h-2 bg-purple-500 transition-all"
+                              style={{
+                                width: `${
+                                  Math.min(
+                                    100,
+                                    ((musicProgress || 0) / (moodMusicRecommendations[currentTrackIndex]?.duration || 1)) * 100
+                                  )
+                                }%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Recommendations list */}
+                        <div className="space-y-2">
+                          {moodMusicRecommendations.map((t, i) => {
+                            const isActive = i === currentTrackIndex && musicPlaying;
+                            return (
+                              <div
+                                key={t.title + i}
+                                className={`flex items-center justify-between p-3 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 ${isActive ? "ring-2 ring-purple-300" : ""}`}
+                              >
+                                <div className="min-w-0 pr-3">
+                                  <div className="font-medium truncate">{t.title}</div>
+                                  <div className="text-xs text-muted-foreground">{t.mood} • {t.duration}s</div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                                  onClick={() => startTrack(i)}
+                                >
+                                  {isActive ? (
+                                    <>
+                                      <Pause className="h-4 w-4 mr-2" /> Pause
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Play className="h-4 w-4 mr-2" /> Play
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       <Button 
-                        onClick={() => setActiveTab("grove")}
+                        onClick={() => {
+                          setActiveTab("grove");
+                          startTrack(0);
+                          toast.message("Starting mood‑lift music in your grove");
+                        }}
                         className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
                       >
                         Visit Your Grove
