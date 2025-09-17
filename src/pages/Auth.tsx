@@ -13,6 +13,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { Label } from "@/components/ui/label";
 
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
@@ -103,7 +104,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-purple-950 dark:via-blue-950 dark:to-indigo-950">
       {/* Top bar with Back */}
       <div className="px-4 pt-4">
-        <Button variant="outline" onClick={() => navigate("/") } className="bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40">
+        <Button variant="outline" onClick={() => navigate("/") } className="bg-white/30 backdrop-blur-md border-white/30 hover:bg-white/40 transition-all">
           Back to Home
         </Button>
       </div>
@@ -126,7 +127,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               />
             </div>
           </motion.div>
-          <Card className="w-full pb-0 border border-white/30 bg-white/30 backdrop-blur-md shadow-xl">
+          <Card className="w-full pb-0 border border-white/40 bg-white/40 dark:bg-white/10 backdrop-blur-xl shadow-2xl rounded-2xl">
             {step === "signIn" ? (
               <>
                 <CardHeader className="text-center">
@@ -171,14 +172,22 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 </CardHeader>
                 <form onSubmit={handleEmailSubmit}>
                   <CardContent>
+                    <div className="space-y-2 mb-3">
+                      <Label htmlFor="email" className="text-sm">Email address</Label>
+                      <p className="text-xs text-muted-foreground">
+                        We'll send a one-time verification code. No password required.
+                      </p>
+                    </div>
+
                     <div className="relative flex items-center gap-2">
                       <div className="relative flex-1">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
+                          id="email"
                           name="email"
                           placeholder="name@example.com"
                           type="email"
-                          className="pl-9"
+                          className="pl-9 rounded-xl bg-white/50 dark:bg-white/10 border-white/40 focus-visible:ring-2 focus-visible:ring-purple-400 transition-all"
                           disabled={isLoading}
                           required
                         />
@@ -189,6 +198,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         size="icon"
                         disabled={isLoading}
                         aria-label={authMode === "signin" ? "Send sign in code" : "Send sign up code"}
+                        className="rounded-xl bg-white/40 hover:bg-white/60 border-white/40 transition-all"
                       >
                         {isLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -197,9 +207,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         )}
                       </Button>
                     </div>
+
                     {error && (
-                      <p className="mt-2 text-sm text-red-500">{error}</p>
+                      <p className="mt-2 text-sm text-red-500" aria-live="polite">{error}</p>
                     )}
+
                     <div className="mt-4">
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -240,6 +252,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <input type="hidden" name="email" value={step.email} />
                     <input type="hidden" name="code" value={otp} />
 
+                    <div className="space-y-2 mb-3 text-center">
+                      <Label className="text-sm">Enter the 6‑digit code</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Check your inbox (and spam). Codes expire after a short time.
+                      </p>
+                    </div>
+
                     <div className="flex justify-center">
                       <InputOTP
                         value={otp}
@@ -248,7 +267,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         disabled={isLoading}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && otp.length === 6 && !isLoading) {
-                            // Find the closest form and submit it
                             const form = (e.target as HTMLElement).closest("form");
                             if (form) {
                               form.requestSubmit();
@@ -258,16 +276,22 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       >
                         <InputOTPGroup>
                           {Array.from({ length: 6 }).map((_, index) => (
-                            <InputOTPSlot key={index} index={index} />
+                            <InputOTPSlot
+                              key={index}
+                              index={index}
+                              className="w-10 h-12 mx-1 rounded-lg bg-white/60 dark:bg-white/10 border border-white/40 text-lg shadow-sm"
+                            />
                           ))}
                         </InputOTPGroup>
                       </InputOTP>
                     </div>
+
                     {error && (
-                      <p className="mt-2 text-sm text-red-500 text-center">
+                      <p className="mt-2 text-sm text-red-500 text-center" aria-live="polite">
                         {error}
                       </p>
                     )}
+
                     <p className="text-sm text-muted-foreground text-center mt-4">
                       Didn't receive a code?{" "}
                       <Button
