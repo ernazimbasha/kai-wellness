@@ -401,16 +401,20 @@ export default function Chat() {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-white/20 backdrop-blur-md border-white/30"
-                onClick={() => toast.info("Voice analysis coming soon!")}
+                className={`bg-white/20 backdrop-blur-md border-white/30 ${micOn ? "ring-2 ring-purple-400" : ""}`}
+                onClick={toggleMic}
+                aria-pressed={micOn}
+                aria-label={micOn ? "Disable voice analysis" : "Enable voice analysis"}
               >
                 <Mic className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-white/20 backdrop-blur-md border-white/30"
-                onClick={() => toast.info("Visual sentiment analysis coming soon!")}
+                className={`bg-white/20 backdrop-blur-md border-white/30 ${camOn ? "ring-2 ring-blue-400" : ""}`}
+                onClick={toggleCam}
+                aria-pressed={camOn}
+                aria-label={camOn ? "Disable visual analysis" : "Enable visual analysis"}
               >
                 <Camera className="h-4 w-4" />
               </Button>

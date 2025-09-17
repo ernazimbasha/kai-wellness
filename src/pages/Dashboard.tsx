@@ -48,7 +48,7 @@ export default function Dashboard() {
   const [worryInput, setWorryInput] = useState<string>("");
   const [reframe, setReframe] = useState<string>("");
 
-  // Simple content for journal reading
+  // Richer content for journal reading
   const journalArticles: Array<{ title: string; content: string; description: string }> = [
     {
       title: "Daily Reflection: Small Wins",
@@ -79,6 +79,24 @@ export default function Dashboard() {
       description: "Quick social doses that reduce stress and lift mood.",
       content:
         "Send one supportive message, share a helpful resource, or thank a peer. Micro‑connections reduce cortisol and increase resilience. Track how your mood shifts after a 2‑minute connection.",
+    },
+    {
+      title: "Focus Builder: Single‑Task Blocks",
+      description: "Cut overwhelm by isolating one clear, finishable task.",
+      content:
+        "Pick one tiny task you can finish in 15–25 minutes. Close extra tabs, silence notifications, and set a visible timer. When done, celebrate the finish—then choose the next small block. Finishing trains focus and builds steady momentum.",
+    },
+    {
+      title: "Anxiety First Aid: Name & Normalize",
+      description: "Label feelings to reduce intensity and reclaim control.",
+      content:
+        "When anxious, pause and name it: “This is anxiety, not danger.” Remind yourself it rises and falls like a wave. Try 4‑4‑6 breathing for a minute, then write one next action you can control. Naming + action helps reduce spiraling.",
+    },
+    {
+      title: "Peer Power: Study Buddy System",
+      description: "Reduce procrastination with low‑pressure accountability.",
+      content:
+        "Find a buddy for silent co‑working or quick 5‑minute check‑ins. Share your one intention for the session and confirm when done. Keep it light. Accountability improves follow‑through and reduces isolation.",
     },
   ];
 
@@ -405,7 +423,7 @@ export default function Dashboard() {
                   transition={{ delay: 0.2 }}
                   ref={journalsRef}
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-purple-500" />
@@ -520,7 +538,7 @@ export default function Dashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-pink-500" />
