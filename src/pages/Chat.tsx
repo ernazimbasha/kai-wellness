@@ -16,7 +16,7 @@ import {
   Smile,
   MessageCircle
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 export default function Chat() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [message, setMessage] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -47,6 +48,13 @@ export default function Chat() {
   const [visualMetrics, setVisualMetrics] = useState<{ brightness: number; motion: number }>(
     { brightness: 0, motion: 0 }
   );
+
+  // Add: Speech recognition references
+  const recognitionRef = useRef<any>(null);
+  const [speechSupported] = useState<boolean>(() => {
+    const w = window as any;
+    return !!(w.SpeechRecognition || w.webkitSpeechRecognition);
+  });
 
   // Adaptive Audioscape
   const [audioOn, setAudioOn] = useState(false);
@@ -276,17 +284,34 @@ export default function Chat() {
     try {
       if (micOn) {
         setMicOn(false);
+        // Stop audio analysis
         analyserRef.current?.disconnect();
-        micStreamRef.current?.getTracks().forEach(t => t.stop());
+        micStreamRef.current?.getTracks().forEach((t) => t.stop());
         micStreamRef.current = null;
         audioCtxRef.current?.close().catch(() => {});
         audioCtxRef.current = null;
+        // Stop speech recognition if running
+        if (recognitionRef.current) {
+          try { recognitionRef.current.stop(); } catch {}
+          recognitionRef.current = null;
+        }
         toast.success("Voice analysis stopped");
         return;
       }
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+      // Request mic with helpful constraints
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: false,
+      });
       micStreamRef.current = stream;
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const ctx = new Ctx();
       audioCtxRef.current = ctx;
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
@@ -296,9 +321,83 @@ export default function Chat() {
       source.connect(analyser);
       setMicOn(true);
       toast.success("Voice analysis started (on-device)");
-    } catch (e) {
+
+      // Start speech recognition if supported
+      if (speechSupported) {
+        const W = window as any;
+        const SR = W.SpeechRecognition || W.webkitSpeechRecognition;
+        const recognition = new SR();
+        recognition.lang = "en-US";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        let finalBuffer = "";
+        recognition.onresult = async (event: any) => {
+          let interim = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalBuffer += transcript + " ";
+            } else {
+              interim += transcript;
+            }
+          }
+          // When a final phrase is ready, send it
+          const finalText = finalBuffer.trim();
+          if (finalText && finalText.split(" ").length > 2 && sessionId && user) {
+            // reset buffer so we don't resend the same chunk
+            finalBuffer = "";
+            try {
+              setIsTyping(true);
+              await addMessage({
+                sessionId,
+                message: finalText,
+                role: "user",
+              });
+              await generateResponse({
+                sessionId,
+                userMessage: finalText,
+                userContext: {
+                  currentMood: "neutral",
+                  stressLevel: Math.round(Math.min(1, 0.6 * Math.min(voiceMetrics.volume / 50, 1) + 0.3 * visualMetrics.motion + 0.1 * (visualMetrics.brightness < 0.25 ? 0.2 : 0)) * 10),
+                },
+              });
+              setIsTyping(false);
+            } catch (err) {
+              console.error(err);
+              toast.error("Voice message failed to send.");
+              setIsTyping(false);
+            }
+          }
+        };
+        recognition.onerror = (e: any) => {
+          console.warn("Speech recognition error:", e);
+        };
+        recognition.onend = () => {
+          // Auto-restart while mic is on to keep listening
+          if (micOn && recognitionRef.current) {
+            try { recognitionRef.current.start(); } catch {}
+          }
+        };
+        recognitionRef.current = recognition;
+        try {
+          recognition.start();
+        } catch {}
+      } else {
+        toast.message("Speech recognition not supported in this browser", {
+          description: "Your voice will be analyzed for stress, but spoken words won't auto-send.",
+        });
+      }
+    } catch (e: any) {
       console.error(e);
-      toast.error("Microphone permission denied");
+      // Clear any partial stream if error occurs
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+      if (e && (e.name === "NotAllowedError" || e.name === "NotFoundError")) {
+        toast.error("Microphone permission denied. Please allow mic access in your browser settings and try again.");
+      } else {
+        toast.error("Unable to start microphone. Check your device settings and try again.");
+      }
     }
   };
 
@@ -350,6 +449,16 @@ export default function Chat() {
     // Scroll to bottom when new messages arrive
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation?.messages]);
+
+  // Auto-enable mic if ?voice=1 is present (moved inside component)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("voice") === "1" && !micOn) {
+      // Attempt to start mic automatically (may still prompt for permission)
+      toggleMic();
+      toast.message("Voice mode", { description: "Listening for your voice. Speak when ready." });
+    }
+  }, [location.search, micOn]);
 
   const handleSendMessage = async () => {
     if (!message.trim() || !sessionId || !user) return;
