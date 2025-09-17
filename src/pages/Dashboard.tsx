@@ -85,6 +85,13 @@ export default function Dashboard() {
     "", "", "", "", ""
   ]);
 
+  // Fetch dashboard data (must be declared before any derived helpers that read them)
+  const moodTrends = useQuery(api.moods.getMoodTrends, { days: 30 });
+  const activityStats = useQuery(api.activities.getActivityStats, { days: 30 });
+  const journalStats = useQuery(api.journals.getJournalStats);
+  const userGrove = useQuery(api.grove.getUserGrove);
+  const recommendations = useQuery(api.activities.getActivityRecommendations);
+
   // Music mood lift (grove) state
   const musicTimerRef = useRef<number | null>(null);
   const [musicPlaying, setMusicPlaying] = useState<boolean>(false);
@@ -279,13 +286,6 @@ export default function Dashboard() {
       });
     }, 1000);
   };
-
-  // Fetch dashboard data
-  const moodTrends = useQuery(api.moods.getMoodTrends, { days: 30 });
-  const activityStats = useQuery(api.activities.getActivityStats, { days: 30 });
-  const journalStats = useQuery(api.journals.getJournalStats);
-  const userGrove = useQuery(api.grove.getUserGrove);
-  const recommendations = useQuery(api.activities.getActivityRecommendations);
 
   // Mutations
   const initializeGrove = useMutation(api.grove.initializeGrove);
@@ -518,7 +518,7 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {recommendations?.map((rec, index) => (
+                    {recommendations?.map((rec: any, index: number) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 10 }}
@@ -586,10 +586,10 @@ export default function Dashboard() {
                       {moodTrends?.moodDistribution && (
                         <div className="space-y-2">
                           <h4 className="text-sm font-medium">Mood Distribution</h4>
-                          {Object.entries(moodTrends.moodDistribution).map(([mood, count]) => (
+                          {Object.entries(moodTrends.moodDistribution as Record<string, number>).map(([mood, count]) => (
                             <div key={mood} className="flex items-center justify-between text-sm">
                               <span className="capitalize">{mood.replace('_', ' ')}</span>
-                              <span>{count} times</span>
+                              <span>{String(count)} times</span>
                             </div>
                           ))}
                         </div>
@@ -1076,10 +1076,10 @@ export default function Dashboard() {
                   {activityStats?.activityBreakdown && (
                     <div className="space-y-2">
                       <h4 className="font-medium">Activity Breakdown</h4>
-                      {Object.entries(activityStats.activityBreakdown).map(([type, count]) => (
+                      {Object.entries(activityStats.activityBreakdown as Record<string, number>).map(([type, count]) => (
                         <div key={type} className="flex items-center justify-between">
                           <span className="capitalize">{type}</span>
-                          <span className="font-medium">{count}</span>
+                          <span className="font-medium">{String(count)}</span>
                         </div>
                       ))}
                     </div>
@@ -1181,7 +1181,7 @@ export default function Dashboard() {
                       <div>
                         <h4 className="font-medium mb-4">Your Plants</h4>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {userGrove.currentPlants.map((plant, index) => (
+                          {userGrove.currentPlants.map((plant: any, index: number) => (
                             <motion.div
                               key={plant.id}
                               initial={{ opacity: 0, scale: 0.8 }}
