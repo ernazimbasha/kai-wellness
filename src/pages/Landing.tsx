@@ -20,6 +20,80 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+
+function MiniKaiBotSVG() {
+  return (
+    <motion.svg
+      width="92"
+      height="92"
+      viewBox="0 0 92 92"
+      role="img"
+      aria-label="Mini Kai robot assistant"
+      className="drop-shadow-sm"
+    >
+      {/* Body */}
+      <motion.g
+        animate={{ scale: [1, 1.03, 1], rotate: [0, 2, -2, 0] }}
+        transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+      >
+        <rect x="18" y="22" rx="14" ry="14" width="56" height="48" fill="url(#bodyGrad)" stroke="rgba(255,255,255,0.6)" />
+        {/* Face panel */}
+        <rect x="24" y="28" rx="10" ry="10" width="44" height="20" fill="rgba(255,255,255,0.45)" stroke="rgba(255,255,255,0.6)" />
+        {/* Eyes */}
+        <motion.circle
+          cx="38"
+          cy="38"
+          r="3"
+          fill="#6D28D9"
+          animate={{ scaleY: [1, 0.1, 1] }}
+          transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.2 }}
+          style={{ transformOrigin: "38px 38px" }}
+        />
+        <motion.circle
+          cx="54"
+          cy="38"
+          r="3"
+          fill="#2563EB"
+          animate={{ scaleY: [1, 0.1, 1] }}
+          transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.4 }}
+          style={{ transformOrigin: "54px 38px" }}
+        />
+        {/* Smile */}
+        <path d="M36 44 Q46 50 56 44" stroke="#4F46E5" strokeWidth="2" fill="none" strokeLinecap="round" />
+        {/* Indicator light */}
+        <motion.circle cx="64" cy="30" r="3" fill="#22C55E" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.6, repeat: Infinity }} />
+        {/* Antenna */}
+        <line x1="46" y1="22" x2="46" y2="12" stroke="rgba(255,255,255,0.7)" strokeWidth="2" />
+        <motion.circle cx="46" cy="10" r="3" fill="#F59E0B" animate={{ y: [0, -2, 0] }} transition={{ duration: 1.8, repeat: Infinity }} />
+        {/* Arms */}
+        <motion.g
+          transform="translate(18,0)"
+          animate={{ rotate: [0, 18, -6, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, repeatType: "mirror" }}
+          style={{ transformOrigin: "10px 40px" }}
+        >
+          <rect x="6" y="40" rx="4" ry="4" width="10" height="4" fill="rgba(255,255,255,0.7)" />
+          <circle cx="6" cy="42" r="3" fill="rgba(255,255,255,0.7)" />
+        </motion.g>
+        <g transform="translate(0,0)">
+          <rect x="76" y="40" rx="4" ry="4" width="10" height="4" fill="rgba(255,255,255,0.7)" />
+          <circle cx="86" cy="42" r="3" fill="rgba(255,255,255,0.7)" />
+        </g>
+        {/* Legs */}
+        <rect x="30" y="66" rx="3" ry="3" width="10" height="14" fill="rgba(255,255,255,0.7)" />
+        <rect x="52" y="66" rx="3" ry="3" width="10" height="14" fill="rgba(255,255,255,0.7)" />
+      </motion.g>
+
+      <defs>
+        <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.6)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0.35)" />
+        </linearGradient>
+      </defs>
+    </motion.svg>
+  );
+}
 
 export default function Landing() {
   const { user, isLoading } = useAuth();
@@ -93,6 +167,17 @@ export default function Landing() {
     }
   ];
 
+  const [cursor, setCursor] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      setCursor({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    // Set a pleasant default position on mount (center-right)
+    setCursor({ x: window.innerWidth * 0.75, y: window.innerHeight * 0.35 });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -109,6 +194,30 @@ export default function Landing() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-green-400 to-teal-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
       </div>
+
+      {/* Add: Floating Mini Kai that follows the cursor */}
+      <motion.div
+        className="fixed z-20 pointer-events-none"
+        animate={{ x: cursor.x, y: cursor.y }}
+        transition={{ type: "spring", stiffness: 150, damping: 18, mass: 0.6 }}
+      >
+        <motion.div
+          className="relative -translate-x-1/2 -translate-y-1/2"
+          animate={{ scale: [1, 1.02, 1], rotate: [0, 1.5, -1.5, 0] }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+        >
+          <div className="flex items-center justify-center">
+            <MiniKaiBotSVG />
+          </div>
+          <div className="mt-2">
+            <div className="px-3 py-2 rounded-xl bg-white/30 dark:bg-black/30 border border-white/40 backdrop-blur-md shadow-md">
+              <p className="text-xs md:text-sm">
+                Hi! I'm Kai — let's {user ? "continue your journey" : "start your journey"} ✨
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
 
       <div className="relative z-10">
         {/* Navigation */}
