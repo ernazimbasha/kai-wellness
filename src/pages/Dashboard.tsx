@@ -49,54 +49,127 @@ export default function Dashboard() {
   const [reframe, setReframe] = useState<string>("");
 
   // Richer content for journal reading
-  const journalArticles: Array<{ title: string; content: string; description: string }> = [
+  const journalArticles: Array<{ title: string; content: string; description: string; bullets?: Array<string> }> = [
     {
       title: "Daily Reflection: Small Wins",
       description: "Capture small achievements to build momentum and self-efficacy.",
+      bullets: [
+        "Why it works: reinforces progress focus over perfection",
+        "Try: write 1 tiny win and what enabled it",
+        "Keep it under 2 minutes; consistency > length",
+      ],
       content:
         "Take 3–5 minutes to note one small win from today—finishing a reading, attending class on time, helping a friend. Why it matters: small wins train your brain to notice progress, reduce stress by restoring a sense of control, and build a positive feedback loop for tomorrow's actions.",
     },
     {
       title: "Beat Exam Stress: 3-2-1",
       description: "A simple pre‑study routine to calm your mind and start focused.",
+      bullets: [
+        "3 deep breaths (inhale 4s, exhale 6s)",
+        "2 minutes of mindful pause",
+        "1 clear intention before you start",
+      ],
       content:
         "Try the 3-2-1 method before studying: 3 deep breaths (inhale 4s, exhale 6s), 2 minutes of mindful pause (notice sounds, posture, breath), 1 clear intention for the session. Repeat this micro‑routine between blocks to keep stress low and concentration high.",
     },
     {
       title: "Sleep Reset: Gentle Routine",
       description: "Consistent, low‑effort habits to signal your brain it's bedtime.",
+      bullets: [
+        "Dim lights, stretch 2 minutes, hydrate",
+        "Write a 3‑item plan for tomorrow",
+        "Avoid screens in the last 20 minutes",
+      ],
       content:
         "Set a consistent wind‑down routine 30 minutes before bed: dim lights, avoid screens, sip water, stretch for 2 minutes, and write a 3‑item plan for tomorrow. Over a week, you'll notice calmer nights and smoother mornings as your brain learns the wind‑down cue.",
     },
     {
       title: "Study Energy: 50/10 Method",
       description: "Sustain energy with focused sprints and mindful breaks.",
+      bullets: [
+        "50 mins deep focus, 10 mins recovery",
+        "Breaks reduce cognitive load",
+        "After 3 cycles, take a longer reset",
+      ],
       content:
         "Work for 50 minutes with deep focus, then take a 10‑minute recovery: stand, breathe, or take a short walk. Use the break to lower cognitive load, not to fill it. After 3 cycles, take a longer 30‑minute reset. This protects attention and reduces burnout.",
     },
     {
       title: "Social Recharge: Micro‑Connection",
       description: "Quick social doses that reduce stress and lift mood.",
+      bullets: [
+        "Send one supportive note",
+        "Share a helpful resource",
+        "Thank a peer for something specific",
+      ],
       content:
         "Send one supportive message, share a helpful resource, or thank a peer. Micro‑connections reduce cortisol and increase resilience. Track how your mood shifts after a 2‑minute connection.",
     },
     {
       title: "Focus Builder: Single‑Task Blocks",
       description: "Cut overwhelm by isolating one clear, finishable task.",
+      bullets: [
+        "Choose a 15–25 min task",
+        "Silence notifications, close tabs",
+        "Celebrate the finish, then pick the next",
+      ],
       content:
         "Pick one tiny task you can finish in 15–25 minutes. Close extra tabs, silence notifications, and set a visible timer. When done, celebrate the finish—then choose the next small block. Finishing trains focus and builds steady momentum.",
     },
     {
       title: "Anxiety First Aid: Name & Normalize",
       description: "Label feelings to reduce intensity and reclaim control.",
+      bullets: [
+        "Say: \"This is anxiety, not danger\"",
+        "Try 4‑4‑6 breathing for a minute",
+        "Write one next action you control",
+      ],
       content:
-        "When anxious, pause and name it: “This is anxiety, not danger.” Remind yourself it rises and falls like a wave. Try 4‑4‑6 breathing for a minute, then write one next action you can control. Naming + action helps reduce spiraling.",
+        "When anxious, pause and name it: \"This is anxiety, not danger.\" Remind yourself it rises and falls like a wave. Try 4‑4‑6 breathing for a minute, then write one next action you can control. Naming + action helps reduce spiraling.",
     },
     {
       title: "Peer Power: Study Buddy System",
       description: "Reduce procrastination with low‑pressure accountability.",
+      bullets: [
+        "Quick 5‑min check‑ins or silent co‑working",
+        "Share one intention per session",
+        "Confirm when done; keep it light",
+      ],
       content:
         "Find a buddy for silent co‑working or quick 5‑minute check‑ins. Share your one intention for the session and confirm when done. Keep it light. Accountability improves follow‑through and reduces isolation.",
+    },
+    {
+      title: "Mindful Mornings: 5‑Minute Start",
+      description: "A short routine that steadies attention for the day.",
+      bullets: [
+        "30s breath, 60s stretch, 2 mins plan",
+        "One priority, one helper habit",
+        "Light hydration before screens",
+      ],
+      content:
+        "Begin with a 5‑minute mini‑routine: 30 seconds of slow breathing, a 60‑second stretch, and 2 minutes to choose your top priority and a tiny helper habit (e.g., water before coffee). This primes your day for steadier attention.",
+    },
+    {
+      title: "Break the Overwhelm Spiral",
+      description: "Practical steps to regain momentum when stuck.",
+      bullets: [
+        "Write the smallest next step",
+        "Set a 10‑minute timer",
+        "Start messy, refine later",
+      ],
+      content:
+        "When everything feels like 'too much,' write down only the smallest next step and start a 10‑minute timer. Give yourself permission to start messy. Momentum beats perfection—stack the next tiny step after the timer.",
+    },
+    {
+      title: "Quick Mood Reset: Box Breathing",
+      description: "A fast calm‑down technique you can do anywhere.",
+      bullets: [
+        "Inhale 4, hold 4, exhale 4, hold 4",
+        "Repeat 4 cycles",
+        "Use before calls, tests, or tough tasks",
+      ],
+      content:
+        "Box breathing helps you reset: inhale for 4, hold for 4, exhale for 4, hold for 4—repeat 4 cycles. Use it before calls, tests, or when you notice tension rising. Short, structured breathing calms your nervous system.",
     },
   ];
 
@@ -479,6 +552,13 @@ export default function Dashboard() {
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {a.description}
                                     </p>
+                                    {a.bullets && a.bullets.length > 0 && (
+                                      <ul className="mt-2 space-y-1 list-disc list-inside text-xs text-muted-foreground">
+                                        {a.bullets.slice(0, 3).map((b) => (
+                                          <li key={b}>{b}</li>
+                                        ))}
+                                      </ul>
+                                    )}
                                   </div>
                                   <Button
                                     size="sm"
