@@ -11,6 +11,8 @@ import "./index.css";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import "./types/global.d.ts";
+import Chat from "@/pages/Chat.tsx";
+import Dashboard from "@/pages/Dashboard.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -49,7 +51,9 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} /> {/* TODO: change redirect after auth to correct page */}
+            <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chat" element={<Chat />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
