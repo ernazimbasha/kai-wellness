@@ -19,6 +19,7 @@ import {
 import { useNavigate } from "react-router";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Chat() {
   const { user, isLoading } = useAuth();
@@ -200,6 +201,75 @@ export default function Chat() {
 
   // Breathing guide
   const [breathingOn, setBreathingOn] = useState(false);
+
+  // --- Quick Games (mood-based suggestions) state ---
+  const games = ["Breathing", "Grounding", "Reflection", "Reframe", "Gratitude"] as const;
+  type Game = typeof games[number] | null;
+
+  const reflectionPrompts: Array<string> = [
+    "What went better than expected today?",
+    "Name one small win you can appreciate right now.",
+    "What's something within your control you can do next?",
+    "If a friend felt this way, what would you tell them?",
+  ];
+  const [suggestedGame, setSuggestedGame] = useState<Game>(null);
+  const [activeGame, setActiveGame] = useState<Game>(null);
+  const [reflectionPrompt, setReflectionPrompt] = useState<string>(reflectionPrompts[0]);
+  const [reflectionAnswer, setReflectionAnswer] = useState<string>("");
+
+  const [groundingAnswers, setGroundingAnswers] = useState<{
+    see: string; touch: string; hear: string; smell: string; taste: string;
+  }>({ see: "", touch: "", hear: "", smell: "", taste: "" });
+
+  const [worryInput, setWorryInput] = useState<string>("");
+  const [reframe, setReframe] = useState<string>("");
+
+  const [grat1, setGrat1] = useState<string>("");
+  const [grat2, setGrat2] = useState<string>("");
+  const [grat3, setGrat3] = useState<string>("");
+
+  const shuffleSuggestion = () => {
+    // Rotate suggestion among appropriate set based on stress
+    const pool: Array<Game> =
+      stressLabel === "High"
+        ? ["Breathing", "Grounding"]
+        : stressLabel === "Medium"
+          ? ["Reframe", "Breathing", "Reflection"]
+          : ["Reflection", "Gratitude"];
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    setSuggestedGame(next);
+    if (next === "Reflection") {
+      setReflectionPrompt(reflectionPrompts[Math.floor(Math.random() * reflectionPrompts.length)]);
+    }
+  };
+
+  const startSuggestedGame = () => {
+    if (!suggestedGame) return;
+    setActiveGame(suggestedGame);
+    // Sync with breathing guide toggle
+    setBreathingOn(suggestedGame === "Breathing");
+    if (suggestedGame === "Reflection") {
+      setReflectionPrompt(reflectionPrompts[Math.floor(Math.random() * reflectionPrompts.length)]);
+      setReflectionAnswer("");
+    }
+    if (suggestedGame === "Grounding") {
+      setGroundingAnswers({ see: "", touch: "", hear: "", smell: "", taste: "" });
+    }
+    if (suggestedGame === "Reframe") {
+      setWorryInput("");
+      setReframe("");
+    }
+    if (suggestedGame === "Gratitude") {
+      setGrat1(""); setGrat2(""); setGrat3("");
+    }
+    toast.success(`${suggestedGame} started`);
+  };
+
+  useEffect(() => {
+    // Auto-update suggested game as mood/stress changes
+    shuffleSuggestion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stressLabel, moodLabel]);
 
   // Toggle mic
   const toggleMic = async () => {
@@ -601,6 +671,258 @@ export default function Chat() {
                   </div>
                 </div>
               )}
+
+              {/* Quick Games: mood-based suggestions */}
+              <div className="mt-4 border-t border-white/20 pt-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <div className="text-sm font-medium">Quick Games</div>
+                    <div className="text-xs text-muted-foreground">
+                      Suggested for your current state: {suggestedGame ?? "…"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/20 backdrop-blur-sm border-white/30"
+                      onClick={shuffleSuggestion}
+                    >
+                      Shuffle
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                      onClick={startSuggestedGame}
+                    >
+                      Play
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Active Game Area */}
+                {activeGame && (
+                  <div className="mt-4 rounded-xl border border-white/20 bg-white/20 backdrop-blur-sm p-4">
+                    <div className="text-sm font-semibold mb-2">{activeGame}</div>
+
+                    {/* Game: Breathing */}
+                    {activeGame === "Breathing" && (
+                      <div className="space-y-3">
+                        <div className="text-xs text-muted-foreground">
+                          Follow the expanding circle. Inhale 4 • Hold 4 • Exhale 6
+                        </div>
+                        {!breathingOn && (
+                          <Button
+                            onClick={() => setBreathingOn(true)}
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0"
+                          >
+                            Start Breathing
+                          </Button>
+                        )}
+                        {breathingOn && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-white/20 backdrop-blur-sm border-white/30"
+                            onClick={() => setBreathingOn(false)}
+                          >
+                            Stop Breathing
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Game: Grounding (5-4-3-2-1 simplified) */}
+                    {activeGame === "Grounding" && (
+                      <div className="grid gap-2">
+                        <div className="text-xs text-muted-foreground">
+                          Name 1 thing for each sense you notice now.
+                        </div>
+                        <Input
+                          placeholder="I see…"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={groundingAnswers.see}
+                          onChange={(e) => setGroundingAnswers((p) => ({ ...p, see: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="I can touch…"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={groundingAnswers.touch}
+                          onChange={(e) => setGroundingAnswers((p) => ({ ...p, touch: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="I hear…"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={groundingAnswers.hear}
+                          onChange={(e) => setGroundingAnswers((p) => ({ ...p, hear: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="I smell…"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={groundingAnswers.smell}
+                          onChange={(e) => setGroundingAnswers((p) => ({ ...p, smell: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="I taste…"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={groundingAnswers.taste}
+                          onChange={(e) => setGroundingAnswers((p) => ({ ...p, taste: e.target.value }))}
+                        />
+                        <Button
+                          onClick={() => {
+                            const allFilled = Object.values(groundingAnswers).every(Boolean);
+                            if (allFilled) {
+                              toast.success("Great grounding! Nicely done.");
+                            } else {
+                              toast.error("Try to fill each sense for best effect.");
+                            }
+                          }}
+                          className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0"
+                          size="sm"
+                        >
+                          Complete
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Game: Reflection */}
+                    {activeGame === "Reflection" && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground">Prompt</div>
+                        <div className="text-sm font-medium">{reflectionPrompt}</div>
+                        <Textarea
+                          placeholder="Write a few lines…"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={reflectionAnswer}
+                          onChange={(e) => setReflectionAnswer(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-white/20 backdrop-blur-sm border-white/30"
+                            onClick={() =>
+                              setReflectionPrompt(
+                                reflectionPrompts[Math.floor(Math.random() * reflectionPrompts.length)]
+                              )
+                            }
+                          >
+                            New Prompt
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0"
+                            onClick={() => {
+                              if (!reflectionAnswer.trim()) {
+                                toast.error("Write a short reflection to continue.");
+                                return;
+                              }
+                              toast.success("Nice reflection. That was meaningful.");
+                              setReflectionAnswer("");
+                            }}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Game: Reframe */}
+                    {activeGame === "Reframe" && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground">
+                          Write the worry. Then we'll reframe it gently.
+                        </div>
+                        <Textarea
+                          placeholder="What's worrying you?"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={worryInput}
+                          onChange={(e) => setWorryInput(e.target.value)}
+                        />
+                        <Button
+                          size="sm"
+                          className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0"
+                          onClick={() => {
+                            if (!worryInput.trim()) {
+                              toast.error("Please write a short worry first.");
+                              return;
+                            }
+                            const tips = [
+                              "What evidence supports a kinder interpretation?",
+                              "If a friend felt this, what would you say to them?",
+                              "What tiny step could ease this by 1% today?",
+                              "Could this be a temporary challenge rather than a fixed trait?",
+                            ];
+                            setReframe(tips[Math.floor(Math.random() * tips.length)]);
+                          }}
+                        >
+                          Reframe
+                        </Button>
+                        {reframe && (
+                          <div className="text-sm mt-1">
+                            Suggested reframe: <span className="font-medium">{reframe}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Game: Gratitude */}
+                    {activeGame === "Gratitude" && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground">List three small gratitudes.</div>
+                        <Input
+                          placeholder="I'm grateful for… (1)"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={grat1}
+                          onChange={(e) => setGrat1(e.target.value)}
+                        />
+                        <Input
+                          placeholder="I'm grateful for… (2)"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={grat2}
+                          onChange={(e) => setGrat2(e.target.value)}
+                        />
+                        <Input
+                          placeholder="I'm grateful for… (3)"
+                          className="bg-white/20 backdrop-blur-sm border-white/30"
+                          value={grat3}
+                          onChange={(e) => setGrat3(e.target.value)}
+                        />
+                        <Button
+                          size="sm"
+                          className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0"
+                          onClick={() => {
+                            if ([grat1, grat2, grat3].every((g) => g.trim())) {
+                              toast.success("Beautiful. Gratitude noted.");
+                              setGrat1(""); setGrat2(""); setGrat3("");
+                            } else {
+                              toast.error("Try to add all three for best effect.");
+                            }
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Controls */}
+                    <div className="mt-3 flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white/20 backdrop-blur-sm border-white/30"
+                        onClick={() => {
+                          setActiveGame(null);
+                          setBreathingOn(false);
+                        }}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
