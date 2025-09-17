@@ -522,16 +522,16 @@ export default function Dashboard() {
               </motion.div>
 
               {/* Journals & Mind Games side-by-side */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:col-span-2 items-stretch [grid-auto-rows:1fr] [&>*]:h-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:col-span-2 items-stretch [grid-auto-rows:1fr] [&>*]:h-full [&>*]:flex">
                 {/* Journals & Knowledge Hub info + reader */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                   ref={journalsRef}
-                  className="h-full"
+                  className="h-full flex"
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col min-h-[560px]">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex-1 flex flex-col min-h-[560px]">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-purple-500" />
@@ -670,9 +670,9 @@ export default function Dashboard() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="h-full"
+                  className="h-full flex"
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col min-h-[560px]">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex-1 flex flex-col min-h-[560px]">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-pink-500" />
