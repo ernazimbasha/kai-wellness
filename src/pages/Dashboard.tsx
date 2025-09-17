@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -30,6 +30,8 @@ export default function Dashboard() {
 
   // Add: controlled tabs state
   const [activeTab, setActiveTab] = useState<"overview" | "activities" | "grove" | "insights">("overview");
+  // Add: ref to scroll to Journals & Knowledge Hub section
+  const journalsRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch dashboard data
   const moodTrends = useQuery(api.moods.getMoodTrends, { days: 30 });
@@ -66,6 +68,16 @@ export default function Dashboard() {
 
   const handleOpenChat = () => {
     navigate("/chat");
+  };
+
+  // Add: helper to go to Journals info
+  const goToJournalsInfo = () => {
+    setActiveTab("overview");
+    // Smoothly scroll after tab renders
+    setTimeout(() => {
+      journalsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+    toast.info("Opened Journals & Knowledge Hub");
   };
 
   return (
@@ -286,6 +298,76 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </motion.div>
+
+              {/* Journals & Knowledge Hub info card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.65 }}
+                ref={journalsRef}
+              >
+                <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-purple-500" />
+                      Journals & Knowledge Hub
+                    </CardTitle>
+                    <CardDescription>
+                      Brief overview of what you can do with Journals and the Knowledge Hub
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen className="h-5 w-5 text-purple-500" />
+                          <h4 className="font-medium">Students</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Private journals for daily reflections and growth. Get daily motivational updates tailored to your journey.
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkles className="h-5 w-5 text-blue-500" />
+                          <h4 className="font-medium">Researchers</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Access anonymized insights to study student wellness trends—privacy-first and consent-driven.
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Leaf className="h-5 w-5 text-emerald-500" />
+                          <h4 className="font-medium">Public Users</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Unlock knowledge cards and curated wellness content with simple guidance and tips for everyday wellbeing.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        variant="outline"
+                        className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                        onClick={goToJournalsInfo}
+                      >
+                        Learn More
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setActiveTab("activities");
+                          toast.success("Try a guided journaling activity");
+                        }}
+                        className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                      >
+                        Start Journaling
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
 
             {/* Quick Actions */}
@@ -309,13 +391,10 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       className="h-20 flex-col bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
-                      onClick={() => {
-                        setActiveTab("activities");
-                        toast.info("Breathing guide is available in Activities");
-                      }}
+                      onClick={goToJournalsInfo}
                     >
-                      <Brain className="h-6 w-6 mb-2 text-blue-500" />
-                      <span className="text-sm">Breathing</span>
+                      <BookOpen className="h-6 w-6 mb-2 text-green-500" />
+                      <span className="text-sm">Journal</span>
                     </Button>
                     <Button
                       variant="outline"

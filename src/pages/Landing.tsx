@@ -209,11 +209,11 @@ export default function Landing() {
             >
               {!user && (
                 <Button
+                  asChild
                   variant="outline"
-                  onClick={() => navigate("/auth")}
                   className="bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30"
                 >
-                  Sign In
+                  <a href="/auth">Sign In</a>
                 </Button>
               )}
               <Button 
