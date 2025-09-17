@@ -22,6 +22,7 @@ import type * as http from "../http.js";
 import type * as journals from "../journals.js";
 import type * as knowledge from "../knowledge.js";
 import type * as moods from "../moods.js";
+import type * as recommendations from "../recommendations.js";
 import type * as users from "../users.js";
 
 /**
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   journals: typeof journals;
   knowledge: typeof knowledge;
   moods: typeof moods;
+  recommendations: typeof recommendations;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

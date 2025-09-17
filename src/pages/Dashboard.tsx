@@ -91,7 +91,7 @@ export default function Dashboard() {
   const activityStats = useQuery(api.activities.getActivityStats, { days: 30 });
   const journalStats = useQuery(api.journals.getJournalStats);
   const userGrove = useQuery(api.grove.getUserGrove);
-  const recommendations = useQuery(api.activities.getActivityRecommendations);
+  const recommendations = useQuery(api.recommendations.getPersonalized, {});
 
   // Music mood lift (grove) state
   const musicTimerRef = useRef<number | null>(null);
@@ -320,8 +320,8 @@ export default function Dashboard() {
 
   // Add: handler for voice-focused chat (simple redirect for now)
   const handleSpeakWithKai = () => {
-    navigate("/chat");
-    toast.message("Voice mode: enable mic in Chat to speak with Kai");
+    navigate("/chat?voice=1");
+    toast.message("Voice mode enabled: allow mic in Chat to speak with Kai");
   };
 
   // Add: helper to go to Journals info
@@ -539,21 +539,42 @@ export default function Dashboard() {
                         className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20"
                       >
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="pr-3">
                             <h4 className="font-medium">{rec.title}</h4>
                             <p className="text-sm text-muted-foreground">{rec.description}</p>
                             <p className="text-xs text-muted-foreground mt-1">{rec.duration} minutes</p>
                           </div>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setActiveTab("activities");
-                              toast.success(`Starting ${rec.type} activity`);
-                            }}
-                            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
-                          >
-                            Start
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="bg-white/30 backdrop-blur-sm border-white/20 hover:bg-white/40"
+                              onClick={() => {
+                                try {
+                                  const utter = new SpeechSynthesisUtterance(`${rec.title}. ${rec.description}`);
+                                  utter.rate = 1;
+                                  utter.pitch = 1;
+                                  window.speechSynthesis.cancel();
+                                  window.speechSynthesis.speak(utter);
+                                  toast.message("Playing recommendation", { description: rec.title });
+                                } catch {
+                                  toast.error("Your browser blocked audio output");
+                                }
+                              }}
+                            >
+                              Listen
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setActiveTab("activities");
+                                toast.success(`Starting ${rec.type} activity`);
+                              }}
+                              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+                            >
+                              Start
+                            </Button>
+                          </div>
                         </div>
                       </motion.div>
                     )) || (
