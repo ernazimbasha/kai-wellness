@@ -36,7 +36,7 @@ export default function Dashboard() {
   const journalsRef = useRef<HTMLDivElement | null>(null);
 
   // Add: local UI state for journals reader and games
-  const [selectedJournal, setSelectedJournal] = useState<{ title: string; content: string } | null>(null);
+  const [selectedJournal, setSelectedJournal] = useState<{ title: string; content: string; description: string; bullets?: Array<string> } | null>(null);
   const [randomPrompt, setRandomPrompt] = useState<string>("");
   const [isBreathing, setIsBreathing] = useState<boolean>(false);
   const [breathSeconds, setBreathSeconds] = useState<number>(0);
@@ -488,15 +488,16 @@ export default function Dashboard() {
               </motion.div>
 
               {/* Journals & Mind Games side-by-side */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:col-span-2 items-stretch">
                 {/* Journals & Knowledge Hub info + reader */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                   ref={journalsRef}
+                  className="h-full"
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-purple-500" />
@@ -506,7 +507,7 @@ export default function Dashboard() {
                         Brief guidance, mini articles, and unlockable insights
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 flex-1">
                       {!selectedJournal ? (
                         <>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -603,9 +604,27 @@ export default function Dashboard() {
                               Back
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {selectedJournal.content}
-                          </p>
+                          {/* Added richer article-like view */}
+                          <div className="space-y-3">
+                            {/* Show the short description as an intro */}
+                            <p className="text-sm text-muted-foreground">{selectedJournal.description}</p>
+                            {/* Key points if available */}
+                            {"bullets" in selectedJournal && Array.isArray((selectedJournal as any).bullets) && (selectedJournal as any).bullets.length > 0 && (
+                              <div>
+                                <h5 className="text-sm font-medium mb-1">Key takeaways</h5>
+                                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                                  {(selectedJournal as any).bullets.map((b: string) => (
+                                    <li key={b}>{b}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            <div className="h-px bg-white/30" />
+                            {/* Full content */}
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {selectedJournal.content}
+                            </p>
+                          </div>
                         </div>
                       )}
                     </CardContent>
@@ -617,8 +636,9 @@ export default function Dashboard() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
+                  className="h-full"
                 >
-                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full">
+                  <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl h-full flex flex-col">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-pink-500" />
@@ -628,7 +648,7 @@ export default function Dashboard() {
                         Light interactions to reset focus and calm the mind
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 flex-1">
                       {/* Random Prompt with Response */}
                       <div className="p-4 rounded-lg bg-white/30 backdrop-blur-sm border border-white/20 space-y-3">
                         <div className="flex items-center justify-between">
